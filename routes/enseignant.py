@@ -116,26 +116,36 @@ def dashboard():
 @login_required
 @enseignant_required
 def add_matiere():
-    nom = request.form['nom']
+    nom = request.form['nom'].strip().capitalize()
     db = get_db()
     c = db.cursor()
-    c.execute("INSERT INTO matiere (nom, id_enseignant) VALUES (?, ?)", (nom, session['user_id']))
-    db.commit()
-    db.close()
-    flash('Matière ajoutée')
+    try:
+        c.execute("INSERT INTO matiere (nom, id_enseignant) VALUES (?, ?)", (nom, session['user_id']))
+        db.commit()
+        flash('Matière ajoutée')
+    except sqlite3.IntegrityError:
+            flash(f'La matière "{nom}" existe deja dans votre liste')
+    finally:
+        db.close()
+    
     return redirect(url_for('enseignant.dashboard'))
 
 @enseignant_bp.route('/groupe/add', methods=['POST'])
 @login_required
 @enseignant_required
 def add_groupe():
-    nom = request.form['nom']
+    nom = request.form['nom'].strip().capitalize()
     db = get_db()
     c = db.cursor()
-    c.execute("INSERT INTO groupe (nom, id_enseignant) VALUES (?, ?)", (nom, session['user_id']))
-    db.commit()
-    db.close()
-    flash('Groupe ajouté')
+    try:
+        c.execute("INSERT INTO groupe (nom, id_enseignant) VALUES (?, ?)", (nom, session['user_id']))
+        db.commit()
+        flash('Groupe ajouté')
+    except sqlite3.IntegrityError:
+            flash(f'Le groupe "{nom}" existe deja dans votre liste')
+    finally:
+        db.close()
+    
     return redirect(url_for('enseignant.dashboard'))
 
 @enseignant_bp.route('/quiz/create', methods=['GET', 'POST'])
@@ -187,13 +197,15 @@ def edit_quiz(quiz_id):
             bareme = request.form['bareme']
             duree = request.form.get('duree_question', 60)
 
+            ajouter_banque_question = 1 if request.form.get('ajouter_banque_question') else 0
+
             if type_q=='Vrai_Faux':
                 bonne_reponse_vf=request.form.get('correct_vf')
                 if not bonne_reponse_vf:
                     flash("Erreur:Vous devez indiquer si la reponse est vrai ou Faux.","error")
                     return redirect(url_for('enseignant.edit_quiz',quiz_id=quiz_id))
-                c.execute('INSERT INTO question (enonce, type, bareme, duree, id_quiz, id_enseignant) VALUES (?, ?, ?, ?, ?, ?)', 
-                     (enonce, type_q, bareme, duree, quiz_id, session['user_id']))
+                c.execute('INSERT INTO question (enonce, type, bareme, duree, id_quiz, id_enseignant,banque_question) VALUES (?, ?, ?, ?, ?, ?, ?)', 
+                    (enonce, type_q, bareme, duree, quiz_id, session['user_id'], ajouter_banque_question))
                 question_id = c.lastrowid
                 c.execute('INSERT INTO choix_reponse(id_question,texte,est_correct) VALUES (?,?,?)',
                           (question_id,"Vrai",(bonne_reponse_vf=='vrai')))
@@ -211,8 +223,8 @@ def edit_quiz(quiz_id):
                 if len(choix_valides)<2:
                     flash("Erreur:Un QCM doit avoir au moins 2 choix de réponses possibles.","error")
                     return redirect(url_for('enseignant.edit_quiz',quiz_id=quiz_id))
-                c.execute('INSERT INTO question(enonce,type,bareme,duree,id_quiz,id_enseignant) VALUES(?,?,?,?,?,?)',
-                          (enonce,type_q,bareme,duree,quiz_id,session['user_id']))
+                c.execute('INSERT INTO question(enonce,type,bareme,duree,id_quiz,id_enseignant,banque_question) VALUES(?,?,?,?,?,?,?)',
+                          (enonce,type_q,bareme,duree,quiz_id,session['user_id'],ajouter_banque_question))
                 question_id=c.lastrowid
                 for i, choix_texte in enumerate(choix):
                     if choix_texte.strip():
@@ -223,6 +235,19 @@ def edit_quiz(quiz_id):
                 pass
             db.commit()
             flash('Question ajoutée')
+        elif action== 'import_from_bank':
+            question_id_source=request.form.get('question_id_banque')
+            c.execute("SELECT * FROM question WHERE id = ? ",(question_id_source,))
+            question_data=c.fetchone()
+            if question_data:
+                c.execute('''INSERT INTO question (enonce,type,bareme,duree,id_quiz,id_enseignant,banque_question) VALUES (?,?,?,?,?,?,?)''',(question_data['enonce'],question_data['type'],question_data['bareme'],question_data['duree'],quiz_id,session['user_id'],1))
+                new_question_id=c.lastrowid
+                c.execute("SELECT * FROM choix_reponse WHERE id_question = ?",(question_id_source,))
+                choix_sources = c.fetchall()
+                for choix_source in choix_sources:
+                    c.execute("INSERT INTO choix_reponse(id_question,texte,est_correct) VALUES (?,?,?)",(new_question_id,choix_source['texte'],choix_source['est_correct']))
+                db.commit()
+                flash('Question importee avec succes')
         elif action == 'publish':
             c.execute("SELECT COUNT(*) as count FROM question WHERE id_quiz=?",(quiz_id,))
             nb_questions=c.fetchone()['count']
@@ -231,10 +256,18 @@ def edit_quiz(quiz_id):
             else:
                 c.execute("UPDATE quiz SET status = 'publié' WHERE id = ?", (quiz_id,))
                 db.commit()
-                flash('Quiz publié')
-    
+                return redirect(url_for('enseignant.dashboard'))  
     c.execute("SELECT * FROM quiz WHERE id = ?", (quiz_id,))
     quiz = row_to_dict(c.fetchone())
+    c.execute(
+            '''SELECT question.* FROM question 
+                JOIN quiz ON question.id_quiz=quiz.id 
+                WHERE quiz.id_matiere = ? 
+                AND question.id_enseignant = ? 
+                AND question.banque_question = 1 
+                AND question.id_quiz != ?''',
+                (quiz['id_matiere'],session['user_id'],quiz_id))
+    banque_questions=[row_to_dict(row) for  row in c.fetchall()]
     c.execute("SELECT * FROM question WHERE id_quiz = ?", (quiz_id,))
     questions = [row_to_dict(row) for row in c.fetchall()]
     
@@ -245,7 +278,7 @@ def edit_quiz(quiz_id):
         questions_avec_choix.append({'question': q, 'choix': choix})
     
     db.close()
-    return render_template('enseignant/edit_quiz.html', quiz=quiz, questions=questions_avec_choix)
+    return render_template('enseignant/edit_quiz.html', quiz=quiz, questions=questions_avec_choix,banque=banque_questions)
 
 @enseignant_bp.route('/statistiques/<int:quiz_id>')
 @login_required
