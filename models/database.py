@@ -38,17 +38,21 @@ def init_db():
             );
             
             CREATE TABLE IF NOT EXISTS user (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nom VARCHAR(100) NOT NULL,
-                prenom VARCHAR(100) NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                id_role INTEGER NOT NULL,
-                id_groupe INTEGER,
-                date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                password_hash TEXT NOT NULL,
-                FOREIGN KEY (id_role) REFERENCES role (id),
-                FOREIGN KEY (id_groupe) REFERENCES groupe (id)
-            );
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    id_role INTEGER NOT NULL,
+    id_groupe INTEGER,
+    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password_hash TEXT NOT NULL,
+    email_verified BOOLEAN DEFAULT 0,
+    email_verification_token TEXT,
+    reset_password_token TEXT,
+    reset_token_expiry TIMESTAMP,
+    FOREIGN KEY (id_role) REFERENCES role (id),
+    FOREIGN KEY (id_groupe) REFERENCES groupe (id)
+);
             
             CREATE TABLE IF NOT EXISTS matiere (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
