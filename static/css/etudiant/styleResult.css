@@ -316,3 +316,23 @@
         text-align: center;
     }
 }
+
+
+
+
+
+
+.btn-correction {
+    background: #3498db;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.btn-correction:hover {
+    background: #2980b9;
+}

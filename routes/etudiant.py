@@ -110,33 +110,62 @@ def submit_quiz(quiz_id):
     reponses_correctes = 0
     total_questions = len(questions)
     
+    # Sauvegarder le résultat d'abord
+    c.execute('INSERT INTO resultat_quiz (id_quiz, id_etudiant, score) VALUES (?, ?, ?)', 
+             (quiz_id, session['user_id'], 0))  # Score temporaire
+    resultat_id = c.lastrowid
+    
+    # Traiter chaque question et sauvegarder les réponses
     for question in questions:
         qid = question['id']
+        est_correct = False
+        points = 0
+        
         if question['type'] == 'numerique':
             reponse_text = request.form.get(f'question_{qid}', '')
             if reponse_text:
-                # Pour les questions numériques, on donne le point si une réponse est fournie
-                score_total += question['bareme']
+                points = question['bareme']
+                est_correct = True
+                score_total += points
                 reponses_correctes += 1
+                
+                # Sauvegarder la réponse
+                c.execute('''
+                    INSERT INTO reponse_etudiant 
+                    (id_resultat, id_question, texte_reponse, est_correct, points_obtenus) 
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (resultat_id, qid, reponse_text, est_correct, points))
+                
         else:
             choix_selectionnes = request.form.getlist(f'question_{qid}')
             if choix_selectionnes:
                 c.execute('SELECT id FROM choix_reponse WHERE id_question = ? AND est_correct = 1', (qid,))
                 corrects = [str(r['id']) for r in c.fetchall()]
-                if set(choix_selectionnes) == set(corrects):
-                    score_total += question['bareme']
+                
+                # Vérifier si la réponse est correcte
+                est_correct = set(choix_selectionnes) == set(corrects)
+                
+                if est_correct:
+                    points = question['bareme']
+                    score_total += points
                     reponses_correctes += 1
+                
+                # Sauvegarder chaque choix sélectionné
+                for choix_id in choix_selectionnes:
+                    c.execute('''
+                        INSERT INTO reponse_etudiant 
+                        (id_resultat, id_question, id_choix, est_correct, points_obtenus) 
+                        VALUES (?, ?, ?, ?, ?)
+                    ''', (resultat_id, qid, choix_id, est_correct, points if est_correct else 0))
     
-    # Sauvegarder le résultat
-    c.execute('INSERT INTO resultat_quiz (id_quiz, id_etudiant, score) VALUES (?, ?, ?)', 
-             (quiz_id, session['user_id'], score_total))
+    # Mettre à jour le score final
+    c.execute('UPDATE resultat_quiz SET score = ? WHERE id = ?', (score_total, resultat_id))
     
     db.commit()
     db.close()
     
-    # Rediriger vers la page des résultats
+    flash(f'Quiz soumis avec succès! Score: {score_total}/{sum(q["bareme"] for q in questions)}')
     return redirect(url_for('etudiant.view_results', quiz_id=quiz_id))
-
 
 @etudiant_bp.route('/quiz/<int:quiz_id>/feedback', methods=['POST'])
 @login_required
@@ -226,3 +255,200 @@ def view_results(quiz_id):
                      
 
     feedback_existant=feedback_existant)
+
+
+
+
+
+
+
+
+
+@etudiant_bp.route('/correction/<int:quiz_id>')
+@login_required
+@etudiant_required
+def view_correction(quiz_id):
+    db = get_db()
+    c = db.cursor()
+    
+    # Récupérer le résultat
+    c.execute('''
+        SELECT r.*, q.titre, u.nom, u.prenom 
+        FROM resultat_quiz r 
+        JOIN quiz q ON r.id_quiz = q.id 
+        JOIN user u ON r.id_etudiant = u.id 
+        WHERE r.id_quiz = ? AND r.id_etudiant = ?
+    ''', (quiz_id, session['user_id']))
+    
+    resultat = row_to_dict(c.fetchone())
+    
+    if not resultat:
+        flash('Résultat non trouvé!')
+        return redirect(url_for('etudiant.dashboard'))
+    
+    # Récupérer toutes les questions avec leurs détails
+    c.execute('''
+        SELECT q.*, 
+               (SELECT COUNT(*) FROM reponse_etudiant re 
+                WHERE re.id_question = q.id AND re.id_resultat = ?) as a_repondu
+        FROM question q 
+        WHERE q.id_quiz = ?
+        ORDER BY q.id
+    ''', (resultat['id'], quiz_id))
+    
+    questions = [row_to_dict(row) for row in c.fetchall()]
+    
+    questions_with_details = []
+    for question in questions:
+        # Récupérer les choix possibles
+        c.execute('SELECT * FROM choix_reponse WHERE id_question = ?', (question['id'],))
+        choix = [row_to_dict(row) for row in c.fetchall()]
+        
+        # Récupérer les réponses de l'étudiant
+        c.execute('''
+            SELECT re.*, cr.texte as choix_texte, cr.est_correct as choix_est_correct
+            FROM reponse_etudiant re
+            LEFT JOIN choix_reponse cr ON re.id_choix = cr.id
+            WHERE re.id_resultat = ? AND re.id_question = ?
+        ''', (resultat['id'], question['id']))
+        
+        reponses = [row_to_dict(row) for row in c.fetchall()]
+        
+        questions_with_details.append({
+            'question': question,
+            'choix': choix,
+            'reponses': reponses,
+            'bareme': question['bareme']
+        })
+    
+    db.close()
+    
+    return render_template('etudiant/correction.html', 
+                         resultat=resultat, 
+                         questions=questions_with_details)
+
+
+
+
+
+
+
+
+@etudiant_bp.route('/correction/<int:quiz_id>/export')
+@login_required
+@etudiant_required
+def export_correction(quiz_id):
+    db = get_db()
+    c = db.cursor()
+    
+    # Récupérer le résultat
+    c.execute('''
+        SELECT r.*, q.titre, u.nom, u.prenom 
+        FROM resultat_quiz r 
+        JOIN quiz q ON r.id_quiz = q.id 
+        JOIN user u ON r.id_etudiant = u.id 
+        WHERE r.id_quiz = ? AND r.id_etudiant = ?
+    ''', (quiz_id, session['user_id']))
+    
+    resultat = row_to_dict(c.fetchone())
+    
+    if not resultat:
+        flash('Résultat non trouvé!')
+        return redirect(url_for('etudiant.dashboard'))
+    
+    # Récupérer les questions et réponses
+    c.execute('''
+        SELECT q.*, 
+               GROUP_CONCAT(cr.texte, '|') as choix_textes,
+               GROUP_CONCAT(cr.est_correct, '|') as choix_corrects
+        FROM question q
+        LEFT JOIN choix_reponse cr ON q.id = cr.id_question
+        WHERE q.id_quiz = ?
+        GROUP BY q.id
+    ''', (quiz_id,))
+    
+    questions = [row_to_dict(row) for row in c.fetchall()]
+    
+    # Préparer le contenu HTML pour l'export
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Correction - {resultat['titre']}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            h1 {{ color: #2c3e50; }}
+            .header {{ margin-bottom: 30px; }}
+            .student-info {{ background: #f8f9fa; padding: 15px; border-radius: 5px; }}
+            .question {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }}
+            .correct {{ color: green; font-weight: bold; }}
+            .incorrect {{ color: red; }}
+            .reponse {{ margin: 10px 0; padding: 10px; background: #f8f9fa; }}
+        </style>
+    </head>
+    <body>
+        <h1>Correction détaillée - {resultat['titre']}</h1>
+        <div class="header">
+            <p><strong>Étudiant:</strong> {resultat['prenom']} {resultat['nom']}</p>
+            <p><strong>Date:</strong> {resultat['date_soumission']}</p>
+            <p><strong>Score final:</strong> {resultat['score']} points</p>
+        </div>
+    """
+    
+    for i, q in enumerate(questions, 1):
+        # Récupérer les réponses de l'étudiant pour cette question
+        c.execute('''
+            SELECT re.*, cr.texte as choix_texte
+            FROM reponse_etudiant re
+            LEFT JOIN choix_reponse cr ON re.id_choix = cr.id
+            WHERE re.id_resultat = ? AND re.id_question = ?
+        ''', (resultat['id'], q['id']))
+        
+        reponses = c.fetchall()
+        
+        html_content += f"""
+        <div class="question">
+            <h3>Question {i}</h3>
+            <p><strong>Énoncé:</strong> {q['enonce']}</p>
+            <p><strong>Type:</strong> {q['type']}</p>
+            <p><strong>Barème:</strong> {q['bareme']} points</p>
+            <div class="reponse">
+                <strong>Votre réponse:</strong><br>
+        """
+        
+        if q['type'] == 'numerique':
+            reponse_text = reponses[0]['texte_reponse'] if reponses else "Non répondue"
+            html_content += f"<p>{reponse_text}</p>"
+        else:
+            if reponses:
+                for r in reponses:
+                    status = "correct" if r['est_correct'] else "incorrect"
+                    html_content += f"<p class='{status}'>- {r['choix_texte']}</p>"
+            else:
+                html_content += "<p>Aucune réponse</p>"
+        
+        # Indiquer si la réponse est correcte
+        points = reponses[0]['points_obtenus'] if reponses else 0
+        html_content += f"<p><strong>Points obtenus:</strong> {points}/{q['bareme']}</p>"
+        html_content += "</div></div>"
+    
+    html_content += """
+    </body>
+    </html>
+    """
+    
+    db.close()
+    
+    # Créer un fichier HTML à télécharger
+    from flask import send_file
+    import io
+    
+    # Pour PDF, nous pouvons utiliser weasyprint ou pdfkit
+    # Version simple : export HTML
+    return send_file(
+        io.BytesIO(html_content.encode('utf-8')),
+        mimetype='text/html',
+        as_attachment=True,
+        download_name=f'correction_{resultat["titre"]}_{session["nom"]}.html'
+    )

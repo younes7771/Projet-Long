@@ -122,6 +122,18 @@ def init_db():
                 FOREIGN KEY (id_etudiant) REFERENCES user (id),
                 UNIQUE(id_quiz, id_etudiant)
             );
+            CREATE TABLE IF NOT EXISTS reponse_etudiant (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_resultat INTEGER NOT NULL,
+    id_question INTEGER NOT NULL,
+    id_choix INTEGER,
+    texte_reponse TEXT,
+    est_correct BOOLEAN,
+    points_obtenus FLOAT,
+    FOREIGN KEY (id_resultat) REFERENCES resultat_quiz (id) ON DELETE CASCADE,
+    FOREIGN KEY (id_question) REFERENCES question (id),
+    FOREIGN KEY (id_choix) REFERENCES choix_reponse (id)
+);            
         ''')
         
         # Insérer les rôles de base
