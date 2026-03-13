@@ -76,6 +76,9 @@
     </div>
     
     <div class="results-actions">
+        <a href="{{ url_for('etudiant.view_correction', quiz_id=resultat.id_quiz) }}">
+        <button class="btn-correction">📝 Voir la correction détaillée</button>
+    </a>
         <a href="{{ url_for('etudiant.dashboard') }}">
             <button>Retour au tableau de bord</button>
         </a>

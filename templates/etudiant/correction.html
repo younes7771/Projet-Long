@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Correction détaillée{% endblock %}
+
+{% block content %}
+<div class="correction-container">
+    <h2>Correction détaillée - {{ resultat.titre }}</h2>
+    
+    <div class="results-header">
+        <p>Étudiant: {{ resultat.prenom }} {{ resultat.nom }}</p>
+        <p>Date: {{ resultat.date_soumission }}</p>
+        <p>Score final: <strong>{{ resultat.score }} points</strong></p>
+    </div>
+    
+    <div class="correction-actions">
+        <a href="{{ url_for('etudiant.export_correction', quiz_id=resultat.id_quiz) }}">
+            <button class="btn-export">📥 Exporter la correction</button>
+        </a>
+        <a href="{{ url_for('etudiant.view_results', quiz_id=resultat.id_quiz) }}">
+            <button class="btn-back">← Retour aux résultats</button>
+        </a>
+    </div>
+    
+    <div class="questions-correction">
+        {% for item in questions %}
+        <div class="question-correction {% if item.reponses and item.reponses[0].est_correct %}correct{% else %}incorrect{% endif %}">
+            <div class="question-header">
+                <h3>Question {{ loop.index }}</h3>
+                <span class="badge">{{ item.question.type }}</span>
+            </div>
+            
+            <div class="question-enonce">
+                <p><strong>{{ item.question.enonce }}</strong></p>
+            </div>
+            
+            <div class="question-details">
+                <p><strong>Barème:</strong> {{ item.bareme }} points</p>
+            </div>
+            
+            <div class="reponse-etudiant">
+                <h4>Votre réponse:</h4>
+                {% if item.question.type == 'numerique' %}
+                    {% if item.reponses %}
+                        <p class="reponse-text">{{ item.reponses[0].texte_reponse }}</p>
+                    {% else %}
+                        <p class="non-repondu">Non répondue</p>
+                    {% endif %}
+                {% else %}
+                    <div class="choix-list">
+                        {% for choix in item.choix %}
+                            <div class="choix-item {% if choix.est_correct %}bon-choix{% endif %} 
+                                        {% for r in item.reponses %}{% if r.id_choix == choix.id %}selectionne{% endif %}{% endfor %}">
+                                <span class="choix-texte">{{ choix.texte }}</span>
+                                {% if choix.est_correct %}
+                                    <span class="badge-correct">✓ Bonne réponse</span>
+                                {% endif %}
+                                {% for r in item.reponses %}
+                                    {% if r.id_choix == choix.id %}
+                                        <span class="badge-selection">Votre choix</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="feedback-question">
+                {% if item.reponses and item.reponses[0].est_correct %}
+                    <p class="feedback-correct">✅ Correct - {{ item.reponses[0].points_obtenus }}/{{ item.bareme }} points</p>
+                {% else %}
+                    <p class="feedback-incorrect">❌ Incorrect - 0/{{ item.bareme }} points</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.correction-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.results-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.correction-actions {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.btn-export {
+    background: #27ae60;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn-export:hover {
+    background: #219653;
+}
+
+.question-correction {
+    background: white;
+    padding: 25px;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-left: 5px solid #ddd;
+}
+
+.question-correction.correct {
+    border-left-color: #27ae60;
+}
+
+.question-correction.incorrect {
+    border-left-color: #e74c3c;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.badge {
+    background: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.reponse-etudiant {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.choix-list {
+    margin-top: 10px;
+}
+
+.choix-item {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.choix-item.bon-choix {
+    background: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.choix-item.selectionne {
+    background: #cce5ff;
+    border-color: #b8daff;
+}
+
+.choix-item.bon-choix.selectionne {
+    background: #d4edda;
+    border: 2px solid #28a745;
+}
+
+.badge-correct {
+    background: #28a745;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.badge-selection {
+    background: #007bff;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.feedback-question {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.feedback-correct {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.feedback-incorrect {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.non-repondu {
+    color: #e74c3c;
+    font-style: italic;
+}
+</style>
+{% endblock %}

@@ -12,7 +12,7 @@ class QuestionTimer {
         this.timerInterval = setInterval(() => {
             this.remainingTime--;
             this.updateDisplay();
-            
+
             if (this.remainingTime <= 0) {
                 this.stop();
                 if (this.onTimeout) {
@@ -33,18 +33,12 @@ class QuestionTimer {
         const minutes = Math.floor(this.remainingTime / 60);
         const seconds = this.remainingTime % 60;
         const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        
+
         const timerElement = document.getElementById(`timer-${this.questionId}`);
         if (timerElement) {
             timerElement.textContent = display;
-            
-            if (this.remainingTime < 30) {
-                timerElement.style.color = '#e74c3c';
-                timerElement.style.fontWeight = 'bold';
-            } else {
-                timerElement.style.color = '';
-                timerElement.style.fontWeight = '';
-            }
+            timerElement.style.color = this.remainingTime < 30 ? '#e74c3c' : '';
+            timerElement.style.fontWeight = this.remainingTime < 30 ? 'bold' : '';
         }
     }
 }
@@ -71,23 +65,20 @@ class QuizManager {
             this.currentTimer.stop();
         }
 
-        // Cacher toutes les questions
         document.querySelectorAll('.question-container').forEach(container => {
             container.style.display = 'none';
         });
 
-        // Afficher la question courante
         const currentQuestion = this.questions[index];
         const questionElement = document.getElementById(`question-${currentQuestion.question.id}`);
         if (questionElement) {
             questionElement.style.display = 'block';
         }
 
-        // Démarrer le timer pour cette question
         this.currentTimer = new QuestionTimer(
             currentQuestion.question.id,
             currentQuestion.question.duree,
-            (questionId) => this.onQuestionTimeout(questionId)
+            () => this.onQuestionTimeout()
         );
         this.currentTimer.start();
 
@@ -95,8 +86,7 @@ class QuizManager {
         this.updateNavigation();
     }
 
-    onQuestionTimeout(questionId) {
-        alert(`Temps écoulé pour la question ${this.currentQuestionIndex + 1}`);
+    onQuestionTimeout() {
         this.nextQuestion();
     }
 
@@ -115,10 +105,9 @@ class QuizManager {
     }
 }
 
-// Initialisation globale
 let quizManager;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     if (window.questionsData && window.questionsData.length > 0) {
         quizManager = new QuizManager();
         quizManager.initialize(window.questionsData);

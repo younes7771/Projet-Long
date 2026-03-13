@@ -1572,7 +1572,7 @@ def gestion_examens():
         matieres=matieres,
         groupes=groupes,
         exams=exams,
-        enseignants=enseignants  # ✅ liste complète des enseignants
+        enseignants=enseignants  # liste complète des enseignants
     )
 
 
@@ -1586,13 +1586,13 @@ def add_matiere():
     db = get_db()
     c = db.cursor()
 
-    # ✅ Colonnes EXACTES de ta table
+    # Colonnes EXACTES de ta table
     c.execute(
         "INSERT INTO matiere (id_enseignant, nom) VALUES (?, ?)",
         (id_enseignant, nom)
     )
 
-    # ✅ Récupération automatique de l'id de la matière
+    # Récupération automatique de l'id de la matière
     id_matiere = c.lastrowid
 
     db.commit()
@@ -1654,13 +1654,13 @@ def add_groupe():
     db = get_db()
     c = db.cursor()
 
-    # ✅ Colonnes EXACTES de la table groupe
+    # Colonnes EXACTES de la table groupe
     c.execute(
         "INSERT INTO groupe (nom, id_enseignant) VALUES (?, ?)",
         (nom, id_enseignant)
     )
 
-    # ✅ Récupération automatique de l'id du groupe
+    # Récupération automatique de l'id du groupe
     id_groupe = c.lastrowid
 
     db.commit()
@@ -1731,10 +1731,10 @@ def create_exam():
         id_matiere = request.form['matiere']
         groupes = request.form.getlist('groupes')   # ✅ plusieurs groupes possibles
 
-        # ✅ ICI on récupère l’enseignant depuis le formulaire
+        # ICI on récupère l’enseignant depuis le formulaire
         id_enseignant = request.form['id_user']
 
-        # ✅ Insertion correcte selon la vraie table quiz
+        # Insertion correcte selon la vraie table quiz
         c.execute("""
             INSERT INTO quiz (
                 titre, description, duree,
@@ -1750,7 +1750,7 @@ def create_exam():
 
         exam_id = c.lastrowid
 
-        # ✅ Liaison examen ↔ groupes
+        # Liaison examen ↔ groupes
         for gid in groupes:
             c.execute("""
                 INSERT INTO quiz_groupe (id_quiz, id_groupe)
@@ -1767,15 +1767,15 @@ def create_exam():
     # PARTIE GET
     # =========================
 
-    # ✅ Chargement des matières
+    # Chargement des matières
     c.execute("SELECT * FROM matiere")
     matieres = [row_to_dict(row) for row in c.fetchall()]
 
-    # ✅ Chargement des groupes
+    # Chargement des groupes
     c.execute("SELECT * FROM groupe")
     groupes = [row_to_dict(row) for row in c.fetchall()]
 
-    # ✅ Chargement de TOUS les enseignants (comme les autres routes)
+    # Chargement de TOUS les enseignants (comme les autres routes)
     c.execute("""
         SELECT user.id, user.nom, user.prenom
         FROM user
@@ -1790,7 +1790,7 @@ def create_exam():
         "admin/create_examen.html",
         matieres=matieres,
         groupes=groupes,
-        enseignants=enseignants   # ✅ pour le <select>
+        enseignants=enseignants   # pour le <select>
     )
 
 

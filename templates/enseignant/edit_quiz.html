@@ -56,6 +56,30 @@
             <p style="font-style: italic; color: #666;">Aucune question disponible dans la banque pour le moment.</p>
         {% endif %}
     </section>
+    </section> <section class="question-bank" style="margin: 20px 0; padding: 15px; background-color: #f0f7ff; border-left: 5px solid #2893f1; border-radius: 4px;">
+        <h3 style="color: #005f6b; margin-top: 0;">📚 Ma banque de questions</h3>
+        <p><small>Questions enregistrées pour cette matière dans d'autres quiz.</small></p>
+
+        {% if banque %}
+            <div class="banque-list" style="max-height: 200px; overflow-y: auto;">
+                {% for q in banque %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #d1e3f8;">
+                    <span style="font-size: 0.9em;"><strong>[{{ q.type }}]</strong> {{ q.enonce }}</span>
+                
+                    <form method="post" style="margin: 0;">
+                        <input type="hidden" name="action" value="import_from_bank">
+                        <input type="hidden" name="question_id_banque" value="{{ q.id }}">
+                        <button type="submit" style="background: #005f6b; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em;">
+                            Importer
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="font-style: italic; color: #666;">Aucune question disponible dans la banque pour le moment.</p>
+        {% endif %}
+    </section>
 
     <section class="add-question">
         <h3>Ajouter une question</h3>
@@ -127,6 +151,14 @@
                     </span>
                 </label>
             </div>
+            <div style="margin: 15px 0; padding: 10px; border: 1px dashed #005f6b; border-radius: 5px;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="ajouter_banque_question" value="1" checked style="margin: 0; padding: 0;accent-color: #28a745; width: 16px; height: 16px;">
+                    <span style="margin-left: -5px; padding-left: 0;">
+                        Ajouter cette question à ma banque de questions pour cette matière ?
+                    </span>
+                </label>
+            </div>
 >>>>>>> origin/main
             
             <button type="submit">Ajouter la question</button>
@@ -152,6 +184,7 @@ function updateChoixFields() {
     const zoneVraiFaux = document.getElementById('zoneVraiFaux');    
     const inputsQCM = zoneQCM.querySelectorAll('input[type="text"]');
     const inputsVF = zoneVraiFaux.querySelectorAll('input[type="radio"]');
+    
     
     
     if (type === 'Vrai_Faux') {
