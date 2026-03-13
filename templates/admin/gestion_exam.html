@@ -134,6 +134,7 @@ function toggleEditForm(id) {
             <thead>
                 <tr>
                     <th>Nom</th>
+                    <th>Enseignant</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -143,29 +144,30 @@ function toggleEditForm(id) {
                     {% for groupe in groupes %}
                         <!-- Ligne groupe -->
                         <tr id="groupe-{{ groupe['id'] }}">
-                        <td>{{ groupe['nom'] }}</td>
-                        <td class="admin-action">
-                            <button type="button"
-                                    class="btn btn-sm btn-warning"
-                                    onclick="toggleEditGroupeForm({{ groupe['id'] }})">
-                                Éditer
-                            </button>
-
-                            <form method="post"
-                                    action="{{ url_for('admin.delete_groupe', groupe_id=groupe['id']) }}"
-                                    style="display:inline;">
-                                <button type="submit"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Confirmer la suppression ?')">
-                                    Supprimer
+                            <td>{{ groupe['nom'] }}</td>
+                            <td>{{ groupe['enseignant'] }}</td>
+                            <td class="admin-action">
+                                <button type="button"
+                                        class="btn btn-sm btn-warning"
+                                        onclick="toggleEditGroupeForm({{ groupe['id'] }})">
+                                    Éditer
                                 </button>
-                            </form>
-                        </td>
+
+                                <form method="post"
+                                        action="{{ url_for('admin.delete_groupe', groupe_id=groupe['id']) }}"
+                                        style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Confirmer la suppression ?')">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
 
                         <!-- Formulaire d'édition inline -->
                         <tr id="edit-groupe-form-{{ groupe['id'] }}" style="display:none;">
-                            <td colspan="2">
+                            <td colspan="3">
                                 <form method="post" action="{{ url_for('admin.edit_groupe', groupe_id=groupe['id']) }}">
                                     <input type="text" name="nom" value="{{ groupe['nom'] }}" required>
 
@@ -185,7 +187,7 @@ function toggleEditForm(id) {
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="2">Aucun groupe enregistré</td>
+                        <td colspan="3">Aucun groupe enregistré</td>
                     </tr>
                 {% endif %}
             </tbody>
@@ -199,7 +201,6 @@ function toggleEditGroupeForm(id) {
     formRow.style.display = (formRow.style.display === "none") ? "table-row" : "none";
 }
 </script>
-
 
 
 <!-- ==================== SECTION EXAMENS ==================== -->
@@ -216,7 +217,7 @@ function toggleEditGroupeForm(id) {
             <thead>
                 <tr>
                     <th>Titre</th>
-                    <th >Status</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -259,5 +260,4 @@ function toggleEditGroupeForm(id) {
 </section>
 
 </div>
-
 {% endblock %}
