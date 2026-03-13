@@ -31,8 +31,9 @@
 }
 
 .navbar a {
-    color: black;
+    color: #005F6B;
     text-decoration: none;
+    font-weight: 600;
     transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 

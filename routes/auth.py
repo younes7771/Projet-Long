@@ -140,6 +140,88 @@ def logout():
     session.clear()
     return redirect(url_for('auth.login'))
 
+# ================== PROFILE ==================
+@auth_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    db = get_db()
+    c = db.cursor()
+    user_id = session.get('user_id')
+
+    if request.method == 'POST':
+        nom = request.form.get('nom', '').strip()
+        prenom = request.form.get('prenom', '').strip()
+        date_naissance = request.form.get('date_naissance', '').strip()
+
+        current_password = request.form.get('current_password', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        c.execute("SELECT * FROM user WHERE id = ?", (user_id,))
+        user = c.fetchone()
+
+        if not user:
+            flash("Utilisateur introuvable.")
+            return redirect(url_for('auth.login'))
+
+        if not nom or not prenom:
+            flash("Le nom et le prénom sont obligatoires.")
+            return redirect(url_for('auth.profile'))
+
+        if not current_password and not new_password and not confirm_password:
+            c.execute("""
+                UPDATE user
+                SET nom = ?, prenom = ?, date_naissance = ?
+                WHERE id = ?
+            """, (
+                nom,
+                prenom,
+                date_naissance if date_naissance else None,
+                user_id
+            ))
+            db.commit()
+
+            session['nom'] = nom
+            session['prenom'] = prenom
+
+            flash("Profil mis à jour.")
+            return redirect(url_for('auth.profile'))
+
+        if not check_password_hash(user['password_hash'], current_password):
+            flash("Mot de passe actuel incorrect.")
+            return redirect(url_for('auth.profile'))
+
+        if new_password != confirm_password:
+            flash("Les nouveaux mots de passe ne correspondent pas.")
+            return redirect(url_for('auth.profile'))
+
+        hashed = generate_password_hash(new_password)
+
+        c.execute("""
+            UPDATE user
+            SET nom = ?, prenom = ?, date_naissance = ?, password_hash = ?
+            WHERE id = ?
+        """, (
+            nom,
+            prenom,
+            date_naissance if date_naissance else None,
+            hashed,
+            user_id
+        ))
+
+        db.commit()
+
+        session['nom'] = nom
+        session['prenom'] = prenom
+
+        flash("Profil et mot de passe mis à jour.")
+        return redirect(url_for('auth.profile'))
+
+    c.execute("SELECT * FROM user WHERE id = ?", (user_id,))
+    user = c.fetchone()
+
+    return render_template('auth/profile.html', user=user)
+
 # ================ MOT DE PASSE OUBLIÉ ================
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

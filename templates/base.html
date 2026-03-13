@@ -22,7 +22,7 @@
             <div class="nav-links">
                 <a href="{{ url_for('index') }}">Accueil</a>
                 <a href="#">Démonstration</a>
-                <a href="#">Contact</a>
+                <a href="{{ url_for('auth.profile') }}">Mon profil</a>
 
                 {% if session.user_id %}
                     <span>Bonjour {{ session.prenom }} {{ session.nom }}</span>

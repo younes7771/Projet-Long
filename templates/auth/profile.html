@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/styleProfile.css') }}">
+
+<div class="profile-container">
+    <h2>Mon profil</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="profile-alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="profile-form">
+        <div class="profile-group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" value="{{ user.nom or '' }}" required>
+        </div>
+
+        <div class="profile-group">
+            <label for="prenom">Prénom</label>
+            <input type="text" id="prenom" name="prenom" value="{{ user.prenom or '' }}" required>
+        </div>
+
+        <div class="profile-group">
+            <label for="date_naissance">Date de naissance</label>
+            <input type="date" id="date_naissance" name="date_naissance" value="{{ user.date_naissance or '' }}">
+        </div>
+
+        <hr class="profile-divider">
+
+        <h3 class="profile-subtitle">Changer le mot de passe</h3>
+
+        <div class="profile-group">
+            <label for="current_password">Mot de passe actuel</label>
+            <input type="password" id="current_password" name="current_password">
+        </div>
+
+        <div class="profile-group">
+            <label for="new_password">Nouveau mot de passe</label>
+            <input type="password" id="new_password" name="new_password">
+        </div>
+
+        <div class="profile-group">
+            <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+            <input type="password" id="confirm_password" name="confirm_password">
+        </div>
+
+        <button type="submit" class="profile-btn">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}
