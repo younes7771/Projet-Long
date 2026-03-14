@@ -20,6 +20,7 @@ def register():
         nom = request.form['nom']
         prenom = request.form['prenom']
         email = request.form['email']
+        date_naissance = request.form['date_naissance']
         password = request.form['password']
         role_type = request.form['role']
         id_groupe = request.form.get('groupe')
@@ -39,14 +40,14 @@ def register():
         try:
             if role_type == 'enseignant':
                 c.execute('''
-                    INSERT INTO user (nom, prenom, email, password_hash, id_role, email_verified, email_verification_token) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (nom, prenom, email, generate_password_hash(password), role[0], 0, verification_token))
+                    INSERT INTO user (nom, prenom, email, date_naissance, password_hash, id_role, email_verified, email_verification_token) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (nom, prenom, email, date_naissance, generate_password_hash(password), role[0], 0, verification_token))
             else:
                 c.execute('''
-                    INSERT INTO user (nom, prenom, email, password_hash, id_role, id_groupe, email_verified, email_verification_token) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (nom, prenom, email, generate_password_hash(password), role[0], id_groupe, 0, verification_token))
+                    INSERT INTO user (nom, prenom, email, date_naissance, password_hash, id_role, id_groupe, email_verified, email_verification_token) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (nom, prenom, email, date_naissance, generate_password_hash(password), role[0], id_groupe, 0, verification_token))
             
             db.commit()
             
@@ -58,14 +59,11 @@ def register():
             
         except sqlite3.IntegrityError:
             flash('Email déjà utilisé')
-        finally:
-            db.close()
     
     db = get_db()
     c = db.cursor()
     c.execute("SELECT * FROM groupe")
     groupes = [row_to_dict(row) for row in c.fetchall()]
-    db.close()
     
     return render_template('auth/register.html', groupes=groupes)
 
@@ -87,7 +85,6 @@ def verify_email(token):
     
     c.execute('UPDATE user SET email_verified = 1, email_verification_token = NULL WHERE id = ?', (user['id'],))
     db.commit()
-    db.close()
     
     flash('Email vérifié avec succès! Vous pouvez maintenant vous connecter.')
     return redirect(url_for('auth.login'))
@@ -100,7 +97,6 @@ def login():
         password = request.form['password']
         
         db = get_db()
-        db.row_factory = sqlite3.Row
         c = db.cursor()
         c.execute('''
             SELECT u.*, r.user_role, g.nom as groupe_nom, g.id as groupe_id 
@@ -110,7 +106,6 @@ def login():
             WHERE u.email = ?
         ''', (email,))
         user_row = c.fetchone()
-        db.close()
         
         if user_row:
             user = row_to_dict(user_row)
@@ -132,8 +127,6 @@ def login():
         flash('Email ou mot de passe incorrect')
     
     return render_template('auth/login.html')
-
-
 
 @auth_bp.route('/logout')
 def logout():
@@ -248,8 +241,6 @@ def forgot_password():
             # Envoyer email
             send_reset_email(email, user['prenom'], reset_token)
         
-        db.close()
-        
         # Toujours dire "email envoyé" pour sécurité (évite de révéler si email existe)
         flash('Si cet email existe, un lien de réinitialisation vous a été envoyé.')
         return redirect(url_for('auth.login'))
@@ -272,7 +263,6 @@ def reset_password_form(token):
     
     if not user:
         flash('Lien de réinitialisation invalide ou expiré')
-        db.close()
         return redirect(url_for('auth.login'))
     
     if request.method == 'POST':
@@ -290,10 +280,8 @@ def reset_password_form(token):
             WHERE id = ?
         ''', (generate_password_hash(new_password), user['id']))
         db.commit()
-        db.close()
         
         flash('Mot de passe mis à jour avec succès! Vous pouvez maintenant vous connecter.')
         return redirect(url_for('auth.login'))
     
-    db.close()
     return render_template('auth/reset_password.html', token=token)

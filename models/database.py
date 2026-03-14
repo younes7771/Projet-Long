@@ -45,7 +45,7 @@ def init_db():
                 id_role INTEGER NOT NULL,
                 id_groupe INTEGER,
                 date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                date_naissance DATE,
+                date_naissance DATE NOT NULL,
                 password_hash TEXT NOT NULL,
                 email_verified BOOLEAN DEFAULT 0,
                 email_verification_token TEXT,
