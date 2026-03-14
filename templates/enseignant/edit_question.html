@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la question{% endblock %}
+
+{% block content %}
+<div class="quiz-edit-container">
+    <h2>Modifier la question</h2>
+
+    <div class="question-edit-box">
+
+        <form method="post">
+
+            <!-- Énoncé -->
+            <label><strong>Énoncé</strong></label>
+            <textarea name="enonce" required rows="3">{{ question.enonce }}</textarea>
+
+            <!-- Barème + Durée -->
+            <div class="form-row">
+                <div>
+                    <label><strong>Barème</strong></label>
+                    <input type="number" name="bareme" value="{{ question.bareme }}" step="0.5" min="0.5" required>
+                </div>
+
+                <div>
+                    <label><strong>Durée (secondes)</strong></label>
+                    <input type="number" name="duree" value="{{ question.duree }}" min="10" required>
+                </div>
+            </div>
+
+            <!-- QCM / VF -->
+            {% if question.type != "numerique" %}
+            <div class="choices-edit-section">
+                <h3>Choix de réponses</h3>
+
+                {% for c in choix %}
+                <div class="choix-item">
+                    <input type="checkbox" name="correct[]" value="{{ loop.index0 }}"
+                           {% if c.est_correct %}checked{% endif %}>
+
+                    <input type="text" name="choix[]" value="{{ c.texte }}" placeholder="Choix {{ loop.index }}">
+                </div>
+                {% endfor %}
+
+                <!-- Ajouter des choix si moins de 4 -->
+                {% for i in range(choix|length, 4) %}
+                <div class="choix-item">
+                    <input type="checkbox" name="correct[]" value="{{ i }}">
+                    <input type="text" name="choix[]" placeholder="Choix {{ i + 1 }}">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Numérique -->
+            {% if question.type == "numerique" %}
+            <div class="num-edit">
+                <label><strong>Réponse correcte (numérique)</strong></label>
+                <input type="number" step="0.01" name="reponse_correcte" value="{{ question.reponse_correcte }}">
+            </div>
+            {% endif %}
+
+            <!-- Boutons -->
+            <div class="edit-actions">
+
+                <!-- enregistrer -->
+                <button type="submit" class="btn-save">Enregistrer</button>
+
+                <!-- retour -->
+                <a href="{{ url_for('enseignant.edit_quiz', quiz_id=question.id_quiz) }}">
+                    <button type="button" class="btn-back">Retour</button>
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<style>
+.question-edit-box {
+    background: var(--light);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+.question-edit-box label {
+    display:block;
+    margin-top:10px;
+}
+textarea, input[type="text"], input[type="number"] {
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+    border-radius:5px;
+    border:1px solid #ccc;
+}
+.choix-item {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+}
+.edit-actions {
+    margin-top:20px;
+    display:flex;
+    gap:15px;
+}
+
+/* Save */
+.btn-save {
+    background-color:#28a745;
+    color:white;
+    padding:8px 15px;
+    border:none;
+    border-radius:5px;
+}
+.btn-save:hover {
+    background-color:#218838;
+}
+
+/* Delete */
+.btn-delete {
+    background-color:#dc3545;
+    color:white;
+    padding:8px 15px;
+    border:none;
+    border-radius:5px;
+}
+.btn-delete:hover {
+    background-color:#c82333;
+}
+
+/* Retour */
+.btn-back {
+    background-color:#6c757d;
+    color:white;
+    padding:8px 15px;
+    border:none;
+    border-radius:5px;
+}
+.btn-back:hover {
+    background-color:#5a6268;
+}
+</style>
+
+{% endblock %}

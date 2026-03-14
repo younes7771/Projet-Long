@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Feedbacks - {{ quiz.titre }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enseignant/styleEnseignant.css') }}">
+
+<style>
+    .central-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .star-active { color: #f39c12; }
+    .star-inactive { color: #dcdde1; }
+    .comment-text {
+        font-style: italic;
+        color: #2f3640;
+        padding: 10px;
+    }
+    .back-nav {
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="central-container">
+    <div class="back-nav">
+        <a href="{{ url_for('enseignant.dashboard') }}">
+            <button type="button" style="background-color: #2893f1; padding: 8px 15px;">
+                ← Retour au tableau de bord
+            </button>
+        </a>
+    </div>
+
+    <h1>Avis des étudiants sur : {{ quiz.titre }}</h1>
+
+    <div class="dashboard-sections">
+        <section class="dashboard-section" style="width: 100%;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Date</th>
+                        <th style="width: 20%;">Note</th>
+                        <th style="width: 65%;">Avis de l'étudiant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in feedback %}
+                    <tr>
+                        <td><small>{{ f.date_creation }}</small></td>
+                        <td>
+                            {% for i in range(1, 6) %}
+                                {% if i <= f.note %}
+                                    <span class="star-active">★</span>
+                                {% else %}
+                                    <span class="star-inactive">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                            <br>
+                            <small>({{ f.note }}/5)</small>
+                        </td>
+                        <td class="comment-text">
+                            "{{ f.texte }}"
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 30px;">
+                            Aucun avis n'a été laissé pour ce quiz pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}

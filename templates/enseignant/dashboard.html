@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord Enseignant{% endblock %}
+
+{% block content %}
+<h1>Tableau de bord Enseignant</h1>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enseignant/styleEnseignant.css') }}">
+<div class="dashboard-sections">
+    <!-- Section Matières -->
+    <section class="dashboard-section">
+        <h2>Matières</h2>
+        <form method="post" action="{{ url_for('enseignant.add_matiere') }}">
+            <input type="text" name="nom" placeholder="Nom de la matière" required>
+            <button type="submit">Ajouter matière</button>
+        </form>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for matiere in matieres %}
+                <tr>
+                    <td>{{ matiere.nom }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section Groupes -->
+    <section class="dashboard-section">
+        <h2>Groupes</h2>
+        <form method="post" action="{{ url_for('enseignant.add_groupe') }}">
+            <input type="text" name="nom" placeholder="Nom du groupe" required>
+            <button type="submit">Ajouter groupe</button>
+        </form>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for groupe in groupes %}
+                <tr>
+                    <td>{{ groupe.nom }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Section Quiz -->
+    <section class="dashboard-section">
+        <h2>Quiz</h2>
+        <a href="{{ url_for('enseignant.create_quiz') }}">
+            <button>Créer un nouveau quiz</button>
+        </a>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in quiz %}
+                <tr>
+                    <td>{{ q.titre }}</td>
+                    <td>{{ q.status }}</td>
+                    <td>
+                        <a href="{{ url_for('enseignant.edit_quiz', quiz_id=q.id) }}">Éditer</a> | 
+                        <a href="{{ url_for('enseignant.statistiques', quiz_id=q.id) }}">Stats</a> | 
+                        <a href="{{ url_for('enseignant.export_quiz', quiz_id=q.id) }}">Export</a> |
+                        <a href="{{ url_for('enseignant.export_quiz_content_pdf', quiz_id=q.id) }}" title="Exporter en PDF">PDF</a> 
+                        <a href="{{ url_for('enseignant.etudiant_feedback', quiz_id=q.id) }}" title="Voir Avis">💬 Voir Avis</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

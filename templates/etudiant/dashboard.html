@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord Étudiant{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/etudiant/styleEtudiant.css') }}">
+
+<h1>Tableau de bord Étudiant</h1>
+
+<!-- Quiz disponibles -->
+<section class="dashboard-section">
+    <h2>Quiz disponibles</h2>
+    
+    {% if quiz %}
+    <div class="cards-container">
+        {% for q in quiz %}
+        <div class="quiz-card {% if q.already_taken %}quiz-card-taken{% endif %}">
+            <div class="quiz-card-header">
+                <h3 class="quiz-card-title">{{ q.titre }}</h3>
+                <p class="quiz-card-subject">{{ q.matiere_nom }}</p>
+                {% if q.already_taken %}
+                <span class="quiz-badge-taken">✓ Déjà passé</span>
+                {% endif %}
+            </div>
+            <div class="quiz-card-footer">
+                <div class="quiz-card-duration">
+                   
+                    <span>{{ q.duree_totale_minutes }} min</span>
+                </div>
+                 {% if q.already_taken %}
+                <button class="quiz-card-button quiz-card-button-disabled" disabled>Déjà passé</button>
+                {% else %}
+                <a href="{{ url_for('etudiant.take_quiz', quiz_id=q.id) }}">
+                    <button class="quiz-card-button">Commencer</button>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>Aucun quiz disponible pour le moment.</p>
+    {% endif %}
+</section>
+
+<!-- Résultats -->
+<section class="dashboard-section">
+    <h2>Mes résultats</h2>
+    
+    {% if resultats %}
+    <table>
+        <thead>
+            <tr>
+                <th>Quiz</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultats %}
+            <tr>
+                <td>{{ r.titre }}</td>
+                <td>{{ r.date_soumission }}</td>
+                <td>{{ r.score }} points</td>
+                <td>
+                    <a href="{{ url_for('etudiant.view_results', quiz_id=r.id_quiz) }}">Voir détails</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Aucun résultat pour le moment.</p>
+    {% endif %}
+</section>
+{% endblock %}

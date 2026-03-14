@@ -1,0 +1,338 @@
+.results-container {
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.results-container h2 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 32px;
+}
+
+/* Résultats Header */
+.results-header {
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+}
+
+.results-header h3 {
+  color: var(--primary);
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.results-header p {
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.results-header p:last-child {
+  margin-bottom: 0;
+}
+
+/* Score Display */
+.score-display {
+  background: linear-gradient(135deg, var(--highlight) 0%, var(--accent) 100%);
+  padding: 50px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+}
+
+.score {
+  color: var(--surface);
+  font-size: 64px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.score-display p {
+  color: var(--surface);
+  font-size: 18px;
+}
+
+/* Résultats Details */
+.results-details {
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border-right: 4px solid var(--highlight);
+}
+
+.results-details p {
+  color: var(--text);
+  margin-bottom: 12px;
+  font-size: 16px;
+  padding: 10px;
+  background-color: var(--surface-2);
+  border-radius: 4px;
+}
+
+.results-details p:last-child {
+  margin-bottom: 0;
+}
+
+.results-details p strong {
+  color: var(--primary);
+  font-weight: bold;
+}
+
+/* Actions */
+.results-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.results-actions a {
+  text-decoration: none;
+}
+
+.results-actions button {
+  padding: 14px 40px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.results-actions button:hover {
+  background-color: var(--accent);
+  color: var(--surface);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .results-container {
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .results-container h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .results-header {
+    padding: 20px;
+  }
+
+  .results-header h3 {
+    font-size: 20px;
+  }
+
+  .results-header p {
+    font-size: 14px;
+  }
+
+  .score-display {
+    padding: 40px;
+  }
+
+  .score {
+    font-size: 48px;
+  }
+
+  .score-display p {
+    font-size: 16px;
+  }
+
+  .results-details {
+    padding: 20px;
+  }
+
+  .results-details p {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .results-actions button {
+    padding: 12px 30px;
+    font-size: 14px;
+  }
+}
+
+/* Styles pour la section feedback */
+.feedback-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: var(--border);
+}
+
+.feedback-section h3 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 10px;
+}
+
+.existing-feedback {
+    background: var(--surface-2);
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid var(--primary);
+}
+
+.feedback-content {
+    margin-top: 15px;
+}
+
+.feedback-content p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+/* Formulaire de feedback */
+.feedback-form {
+    background: var(--surface);
+    padding: 25px;
+    border-radius: 6px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 5px rgba(0, 95, 107, 0.3);
+}
+
+/* Système de notation par étoiles - CORRIGÉ */
+.star-rating {
+    display: flex;
+    font-size: 28px;
+    direction: rtl;
+}
+
+.star-input {
+    display: none;
+}
+
+.star-label {
+    color: #ddd;
+    cursor: pointer;
+    padding: 0 3px;
+    transition: color 0.2s;
+}
+
+/* Quand on survole une étoile, elle et toutes celles à gauche deviennent jaunes */
+.star-label:hover,
+.star-label:hover ~ .star-label {
+    color: var(--highlight);
+}
+
+/* Quand une étoile est sélectionnée, elle et toutes celles à gauche restent jaunes */
+.star-input:checked ~ .star-label {
+    color: var(--highlight);
+}
+
+/* Garder les étoiles jaunes après la sélection quand on survole */
+.star-input:checked ~ .star-label:hover {
+    color: var(--highlight);
+}
+
+/* Boutons feedback */
+.btn-submit-feedback {
+    background: var(--primary);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+    transition: all 0.25s ease;
+}
+
+.btn-submit-feedback:hover {
+    background: var(--accent);
+}
+
+.btn-skip {
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: inline-block;
+    transition: all 0.25s ease;
+}
+
+.btn-skip:hover {
+    background: var(--surface-2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .feedback-section {
+        padding: 15px;
+    }
+    
+    .star-rating {
+        font-size: 24px;
+    }
+    
+    .btn-submit-feedback, .btn-skip {
+        width: 100%;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+}
+
+
+
+
+
+
+.btn-correction {
+    background: #3498db;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.btn-correction:hover {
+    background: #2980b9;
+}

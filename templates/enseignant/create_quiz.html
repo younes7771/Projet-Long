@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Créer un quiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enseignant/styleCreateQuiz.css') }}">
+<div class="form-container">
+    <h2>Créer un quiz</h2>
+    
+    <form method="post">
+        <input type="text" name="titre" placeholder="Titre du quiz" required>
+        <textarea name="description" placeholder="Description du quiz" rows="4"></textarea>
+        <!-- <input type="number" name="duree" placeholder="Durée totale (minutes)" required min="1"> -->
+        
+        <select name="matiere" required>
+            <option value="">Sélectionner une matière</option>
+            {% for matiere in matieres %}
+            <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+            {% endfor %}
+        </select>
+        
+        <fieldset>
+            <legend>Groupes cibles (optionnel)</legend>
+            {% for groupe in groupes %}
+            <label class="checkbox-label">
+                <input type="checkbox" name="groupes" value="{{ groupe.id }}">
+                {{ groupe.nom }}
+            </label>
+            {% endfor %}
+        </fieldset>
+        
+        <button type="submit">Créer le quiz</button>
+    </form>
+    
+    <p style="margin-top: 20px;">
+        <a href="{{ url_for('enseignant.dashboard') }}">← Retour au tableau de bord</a>
+    </p>
+</div>
+{% endblock %}

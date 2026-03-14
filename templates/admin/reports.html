@@ -1,0 +1,171 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Statistiques{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleStatistique.css') }}">
+
+<div class="dashboard-container">
+
+    <!-- --- Section Utilisateurs --- -->
+    <h2 class="admin-title">Statistiques Utilisateurs</h2>
+    <div class="stats-overview">
+        <div class="stat-card">
+            <h3>Total utilisateurs</h3>
+            <div class="stat-value">{{ total_users }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Utilisateurs actifs 30 derniers jours</h3>
+            <div class="stat-value">{{ active_users }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Rôles</h3>
+            <ul>
+                <li>Étudiants : {{ roles_count.get('etudiant', 0) }}</li>
+                <li>Enseignants : {{ roles_count.get('enseignant', 0) }}</li>
+                <li>Admins : {{ roles_count.get('admin', 0) }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="stats-overview">
+        <div class="stat-card full">
+            <h3>Répartition des rôles</h3>
+            <canvas id="rolesChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- --- Section Examens Globaux --- -->
+    <h2 class="admin-title">Statistiques Examens</h2>
+    <div class="stats-overview">
+        <div class="stat-card">
+            <h3>Total examens</h3>
+            <div class="stat-value">{{ total_exams }}</div>
+        </div>
+    </div>
+
+    <h3>Détails des examens</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Examen</th>
+                <th>Nombre d'étudiants</th>
+                <th>Score moyen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ex in exams_stats %}
+            <tr>
+                <td>{{ ex.titre }}</td>
+                <td>{{ ex.nb_etudiants }}</td>
+                <td>{{ ex.moyenne }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- --- Graphiques --- -->
+    <div class="stats-overview">
+        <div class="stat-card full">
+            <h3>Notes des examens</h3>
+            <canvas id="examsChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- --- Section Détails d’un examen spécifique (optionnelle) --- -->
+    {% if examen %}
+    <h2>Statistiques de l'examen : {{ examen.titre }}</h2>
+    
+    <div class="stats-overview">
+        <div class="stat-card">
+            <h3>Score moyen</h3>
+            <div class="stat-value">{{ "%.2f"|format(moyenne) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Nombre d'étudiants</h3>
+            <div class="stat-value">{{ resultats|length }}</div>
+        </div>
+    </div>
+    
+    <h3>Résultats des étudiants</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Date</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultats %}
+            <tr>
+                <td>{{ r.prenom }} {{ r.nom }}</td>
+                <td>{{ r.date_soumission }}</td>
+                <td>{{ r.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="actions" style="margin-top: 20px;">
+        <a href="{{ url_for('admin.export_examen', examen_id=examen.id) }}">
+            <button>Exporter en CSV</button>
+        </a>
+        <a href="{{ url_for('admin.dashboard') }}">
+            <button>Retour au tableau de bord</button>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Chart.js pour graphiques -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('examsChart').getContext('2d');
+    const examsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for ex in exams_stats %}'{{ ex.titre }}',{% endfor %}],
+            datasets: [{
+                label: 'Score moyen par examen',
+                data: [{% for ex in exams_stats %}{{ ex.moyenne }},{% endfor %}],
+                backgroundColor: 'rgba(42, 157, 143, 0.6)',
+                borderColor: 'rgba(42, 157, 143, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    const rolesCount = {{ roles_count | tojson }};
+    const rolesCtx = document.getElementById('rolesChart').getContext('2d');
+
+    new Chart(rolesCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Étudiants', 'Enseignants', 'Admins'],
+            datasets: [{
+                data: [
+                    rolesCount['etudiant'] || 0,
+                    rolesCount['enseignant'] || 0,
+                    rolesCount['admin'] || 0
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Éditer le quiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enseignant/styleEditQuiz.css') }}">
+<div class="quiz-edit-container">
+    <h2>Éditer: {{ quiz.titre }}</h2>
+    <section class="existing-questions">
+        <h3>Questions existantes</h3>
+        {% for item in questions %}
+        <div class="question">
+            <div class="question-header">
+                <strong>{{ item.question.enonce }}</strong>
+                <span>({{ item.question.type }}, {{ item.question.bareme }} pts, {{ item.question.duree }}s)</span>
+            </div>
+
+            <div class="action-links">
+                <a href="{{ url_for('enseignant.edit_question', question_id=item.question.id) }}">Modifier</a>
+                <a href="{{ url_for('enseignant.delete_question', question_id=item.question.id) }}">Supprimer</a>
+            </div>
+            
+            {% if item.choix %}
+            <ul class="choices-list">
+                {% for c in item.choix %}
+                <li>{{ c.texte }} {% if c.est_correct %} ✓{% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    </section> <section class="question-bank" style="margin: 20px 0; padding: 15px; background-color: #f0f7ff; border-left: 5px solid #2893f1; border-radius: 4px;">
+        <h3 style="color: #005f6b; margin-top: 0;">📚 Ma banque de questions</h3>
+        <p><small>Questions enregistrées pour cette matière dans d'autres quiz.</small></p>
+
+        {% if banque %}
+            <div class="banque-list" style="max-height: 200px; overflow-y: auto;">
+                {% for q in banque %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #d1e3f8;">
+                    <span style="font-size: 0.9em;"><strong>[{{ q.type }}]</strong> {{ q.enonce }}</span>
+                
+                    <form method="post" style="margin: 0;">
+                        <input type="hidden" name="action" value="import_from_bank">
+                        <input type="hidden" name="question_id_banque" value="{{ q.id }}">
+                        <button type="submit" style="background: #005f6b; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.8em;">
+                            Importer
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="font-style: italic; color: #666;">Aucune question disponible dans la banque pour le moment.</p>
+        {% endif %}
+    </section>
+
+    <section class="add-question">
+        <h3>Ajouter une question</h3>
+        
+        <form method="post">
+            <input type="hidden" name="action" value="add_question">
+            
+            <textarea name="enonce" placeholder="Énoncé de la question" required rows="3"></textarea>
+            
+            <select name="type" id="type" onchange="updateChoixFields()" required>
+                <option value="">Type de question</option>
+                <option value="QCM_simple">QCM simple</option>
+                <option value="QCM_multiple">QCM multiple</option>
+                <option value="Vrai_Faux">Vrai/Faux</option>
+                <option value="numerique">Numérique</option>
+            </select>
+            
+            <div class="form-row">
+                <input type="number" name="bareme" step="0.5" value="1" placeholder="Barème" required min="0.5">
+                <input type="number" name="duree_question" value="60" placeholder="Durée (secondes)" required min="10">
+            </div>
+
+            <div id="zoneQCM" style="display: none;">
+                <p><strong>Réponses possibles (Cochez les bonnes réponses) :</strong></p>
+    
+                <div id="choix-container">
+        
+                <div class="choix-item" style="margin-bottom: 10px;">
+                    <input type="checkbox" name="correct[]" value="0">
+                    <input type="text" name="choix[]" placeholder="Réponse 1" required style="width: 70%;">
+                </div>
+
+                <div class="choix-item" style="margin-bottom: 10px;">
+                    <input type="checkbox" name="correct[]" value="1">
+                    <input type="text" name="choix[]" placeholder="Réponse 2" required style="width: 70%;">
+                </div>
+
+                </div>
+
+                <button type="button" onclick="ajouterChoix()" style="margin-top: 10px; background-color: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                     + Ajouter une autre réponse
+                </button>
+            </div>
+
+            <div id="zoneVraiFaux" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #ddd; background-color: #f8f9fa; border-radius: 5px; text-align: center;">
+                <p><strong>Quelle est la bonne réponse ?</strong></p>
+                <div style="display: flex; justify-content: center; gap: 30px;">
+                    <label style="cursor: pointer; font-weight: bold; color: green; font-size: 1.1em;">
+                        <input type="radio" name="correct_vf" value="vrai"> VRAI
+                    </label>
+                    
+                    <label style="cursor: pointer; font-weight: bold; color: red; font-size: 1.1em;">
+                        <input type="radio" name="correct_vf" value="faux"> FAUX
+                    </label>
+                </div>
+            </div>
+
+            <div id="zoneNumerique" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #ddd; background-color: #e9ecef; border-radius: 5px;">
+                <p><strong>Entrez la valeur numérique correcte :</strong></p>
+                <input type="number" step="any" name="bonne_reponse_num" id="input_num"style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+            <div style="margin: 15px 0; padding: 10px; border: 1px dashed #005f6b; border-radius: 5px;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="ajouter_banque_question" value="1" checked style="margin: 0; padding: 0;accent-color: #28a745; width: 16px; height: 16px;">
+                    <span style="margin-left: -5px; padding-left: 0;">
+                        Ajouter cette question à ma banque de questions pour cette matière ?
+                    </span>
+                </label>
+            </div>
+            
+            <button type="submit">Ajouter la question</button>
+        </form>
+    </section>
+
+    <section class="quiz-actions">
+        <form method="post" style="display: inline;">
+            <input type="hidden" name="action" value="publish">
+            <button type="submit" class="btn-publish">Publier le quiz</button>
+        </form>
+        
+        <a href="{{ url_for('enseignant.dashboard') }}">
+            <button class="btn-back">Retour au tableau de bord</button>
+        </a>
+    </section>
+</div>
+
+<script>
+function updateChoixFields() {
+    const type = document.getElementById('type').value;    
+    const zoneQCM = document.getElementById('zoneQCM');
+    const zoneVraiFaux = document.getElementById('zoneVraiFaux'); 
+    const zoneNumerique = document.getElementById('zoneNumerique');   
+    const inputsQCM = zoneQCM.querySelectorAll('input[type="text"]');
+    const inputsVF = zoneVraiFaux.querySelectorAll('input[type="radio"]');
+    const inputNum = document.getElementById('input_num');
+    
+    
+    if (type === 'Vrai_Faux') {
+        zoneQCM.style.display = 'none'; 
+        zoneNumerique.style.display = 'none';     
+        zoneVraiFaux.style.display = 'block';
+        inputsQCM.forEach(function(input) {
+            input.required = false;
+        });
+        inputsVF.forEach(function(input) {
+            input.required = true;
+        });
+        if(inputNum) inputNum.required = false;
+
+    } 
+    else if (type === 'QCM_simple' || type === 'QCM_multiple') {
+        zoneQCM.style.display = 'block';     
+        zoneVraiFaux.style.display = 'none';
+        zoneNumerique.style.display = 'none';
+        inputsQCM.forEach(function(input) {
+            input.required = true;
+        });
+        inputsVF.forEach(function(input) {
+            input.required = false;
+        });
+        if(inputNum) inputNum.required = false;
+    } 
+    else if (type === 'numerique') {
+        zoneQCM.style.display = 'none';      
+        zoneVraiFaux.style.display = 'none';
+        zoneNumerique.style.display = 'block';
+        inputsQCM.forEach(function(input) {
+            input.required = false;
+        });
+        inputsVF.forEach(function(input) {
+            input.required = false;
+        });
+        if(inputNum) inputNum.required = true;
+    } 
+    else {
+        zoneQCM.style.display = 'none';
+        zoneVraiFaux.style.display = 'none';
+        zoneNumerique.style.display = 'none';
+        inputsQCM.forEach(input => input.required = false);
+        inputsVF.forEach(input => input.required = false);
+        if(inputNum) inputNum.required = false;
+    }
+}
+function ajouterChoix() {
+    const container = document.getElementById('choix-container');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    const estModeQCM = document.getElementById('zoneQCM').style.display !== 'none';
+    div.className = 'choix-item';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `
+        <input type="checkbox" name="correct[]" value="${index}">
+        <input type="text" name="choix[]" placeholder="Réponse ${index + 1}" ${estModeQCM ? 'required' : ''} style="width: 70%;">
+        <button type="button" onclick="supprimerChoix(this)" style="margin-left: 5px; color: red; border: none; background: none; cursor: pointer;">🗑️</button>
+    `;
+    container.appendChild(div);
+}
+function supprimerChoix(button) {
+    const container = document.getElementById('choix-container');
+    if (container.children.length <= 2) {
+        alert("Un QCM doit avoir au minimum 2 choix !");
+        return;
+    }
+    button.parentElement.remove();   
+    reindexerChoix();
+}
+function reindexerChoix() {
+    const container = document.getElementById('choix-container');
+    const items = container.getElementsByClassName('choix-item');   
+    for (let i = 0; i < items.length; i++) {
+        const checkbox = items[i].querySelector('input[type="checkbox"]');
+        const textInput = items[i].querySelector('input[type="text"]');        
+        checkbox.value = i;
+        textInput.placeholder = `Réponse ${i + 1}`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateChoixFields();
+});
+</script>
+{% endblock %}

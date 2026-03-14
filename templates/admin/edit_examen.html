@@ -1,0 +1,168 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Éditer examen : {{ exam.titre }}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleEditQuiz.css') }}">
+
+<div class="quiz-edit-container">
+
+    <!-- Formulaire de modification de l'examen -->
+    <section class="edit-exam">
+        <h2>Modifier l'examen</h2>
+        <form method="post">
+            <input type="hidden" name="action" value="edit_exam">
+
+            <!-- Titre -->
+            <input type="text" name="titre" placeholder="Titre de l'examen" value="{{ exam.titre }}" >
+
+            <!-- Description -->
+            <textarea name="description" placeholder="Description de l'examen" rows="4">{{ exam.description }}</textarea>
+
+            <!-- Durée -->
+            <input type="number" name="duree" placeholder="Durée totale (minutes)" value="{{ exam.duree }}" min="1" >
+
+            <!-- Date de début -->
+            <label>Date de début :</label>
+            <input type="datetime-local" name="date_debut" value="{{ exam.date_debut }}" >
+
+            <!-- Date de fin -->
+            <label>Date de fin :</label>
+            <input type="datetime-local" name="date_fin" value="{{ exam.date_fin }}">
+
+            <!-- Status -->
+            <label>Status :</label>
+            <select name="status" required>
+                <option value="brouillon" {% if exam.status == 'brouillon' %}selected{% endif %}>Brouillon</option>
+                <option value="publié" {% if exam.status == 'publié' %}selected{% endif %}>Publié</option>
+                <option value="terminé" {% if exam.status == 'terminé' %}selected{% endif %}>Terminé</option>
+            </select>
+
+            <!-- Matière -->
+            <label>Matière :</label>
+            <select name="matiere" required>
+                {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}" {% if matiere.id == exam.id_matiere %}selected{% endif %}>
+                        {{ matiere.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Enseignant responsable -->
+            <label>Enseignant :</label>
+            <select name="id_user" required>
+                {% for prof in enseignants %}
+                    <option value="{{ prof.id }}" {% if prof.id == exam.id_enseignant %}selected{% endif %}>
+                        {{ prof.nom }} {{ prof.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn-save">Enregistrer les modifications</button>
+        </form>
+    </section>
+
+    <!-- Questions existantes -->
+    <section class="existing-questions">
+        <h3>Questions existantes</h3>
+
+        {% for item in questions %}
+        <div class="question">
+            <div class="question-header">
+                <strong>{{ item.question.enonce }}</strong>
+                <span>({{ item.question.type }}, {{ item.question.bareme }} pts, {{ item.question.duree }}s)</span>
+            </div>
+
+            <div class="action-links">
+                <a href="{{ url_for('enseignant.edit_question', question_id=item.question.id) }}">Modifier</a>
+                <a href="{{ url_for('enseignant.delete_question', question_id=item.question.id) }}">Supprimer</a>
+            </div>
+
+            {% if item.choix %}
+            <ul class="choices-list">
+                {% for c in item.choix %}
+                <li>{{ c.texte }} {% if c.est_correct %}✓{% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+
+    <!-- Ajouter une question -->
+    <section class="add-question">
+        <h3>Ajouter une question</h3>
+
+        <form method="post">
+            <input type="hidden" name="action" value="add_question">
+
+            <textarea name="enonce" placeholder="Énoncé de la question" required></textarea>
+
+            <select name="type" id="type" onchange="updateChoixFields()" required>
+                <option value="">Type de question</option>
+                <option value="QCM_simple">QCM simple</option>
+                <option value="QCM_multiple">QCM multiple</option>
+                <option value="Vrai_Faux">Vrai/Faux</option>
+                <option value="numerique">Numérique</option>
+            </select>
+
+            <div class="form-row">
+                <input type="number" name="bareme" min="0.5" step="0.5" value="1" required>
+                <input type="number" name="duree_question" value="60" min="10" required>
+            </div>
+
+            <!-- Choix QCM -->
+            <div id="choix_section" style="display:none;">
+                <p><strong>Choix :</strong></p>
+                {% for i in range(4) %}
+                <div class="choix-item">
+                    <input type="checkbox" name="correct[]" value="{{ i }}">
+                    <input type="text" name="choix[]" placeholder="Choix {{ i+1 }}">
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Réponse numérique -->
+            <div id="numerique_section" style="display:none;">
+                <p>Réponse correcte :</p>
+                <input type="number" name="reponse_correcte" step="0.01">
+            </div>
+
+            <button type="submit" class="btn-publish">Ajouter la question</button>
+        </form>
+    </section>
+
+    <!-- Boutons bas -->
+    <section class="quiz-actions">
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="action" value="publish">
+            <button type="submit" class="btn-publish">Publier l'examen</button>
+        </form>
+
+        <a href="{{ url_for('admin.gestion_examens') }}">
+            <button type="button" class="btn-back">Retour à la gestion des examens</button>
+        </a>
+    </section>
+
+</div>
+
+<script>
+function updateChoixFields() {
+    const type = document.getElementById('type').value;
+    const choixSection = document.getElementById('choix_section');
+    const numeriqueSection = document.getElementById('numerique_section');
+
+    if (type === 'QCM_simple' || type === 'QCM_multiple' || type === 'Vrai_Faux') {
+        choixSection.style.display = 'block';
+    } else {
+        choixSection.style.display = 'none';
+    }
+
+    if (type === 'numerique') {
+        numeriqueSection.style.display = 'block';
+    } else {
+        numeriqueSection.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

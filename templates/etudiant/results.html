@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Résultats du quiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/etudiant/styleResult.css') }}">
+<div class="results-container">
+    <h2>Résultats du quiz</h2>
+    
+    <div class="results-header">
+        <h3>{{ resultat.titre }}</h3>
+        <p>Étudiant: {{ resultat.prenom }} {{ resultat.nom }}</p>
+        <p>Date: {{ resultat.date_soumission }}</p>
+    </div>
+    
+    <div class="score-display">
+        <div class="score">{{ resultat.score }} points</div>
+        <p>sur {{ points_max }} points maximum</p>
+    </div>
+    
+    <div class="results-details">
+        <p>Nombre de questions: {{ total_questions }}</p>
+        <p>Score: {{ resultat.score }}/{{ points_max }}</p>
+        <p>Pourcentage: {{ "%.1f"|format((resultat.score / points_max * 100) if points_max > 0 else 0) }}%</p>
+    </div>
+
+    <!-- NOUVEAU: Section Feedback -->
+    <div class="feedback-section">
+        <h3>Votre avis sur ce quiz</h3>
+        
+        {% if feedback_existant %}
+            <div class="existing-feedback">
+                <h4>Merci pour votre feedback!</h4>
+                <div class="feedback-content">
+                    <p><strong>Votre commentaire:</strong> {{ feedback_existant.texte }}</p>
+                    {% if feedback_existant.note %}
+                    <p><strong>Votre note:</strong> 
+                        {% for i in range(5) %}
+                            {% if i < feedback_existant.note %}
+                                ⭐
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                        ({{ feedback_existant.note }}/5)
+                    </p>
+                    {% endif %}
+                    <p><em>Soumis le: {{ feedback_existant.date_creation }}</em></p>
+                </div>
+            </div>
+        {% else %}
+            <form method="post" action="{{ url_for('etudiant.submit_feedback', quiz_id=resultat.id_quiz) }}" class="feedback-form">
+                <div class="form-group">
+                    <label for="note">Notez ce quiz (optionnel):</label>
+                    <div class="star-rating">
+                        {% for i in range(5, 0, -1) %}
+                        <input type="radio" id="star{{ i }}" name="note" value="{{ i }}" class="star-input">
+                        <label for="star{{ i }}" class="star-label">★</label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="texte">Votre commentaire (obligatoire):</label>
+                    <textarea id="texte" name="texte" rows="4" 
+                              placeholder="Partagez votre expérience, suggestions ou difficultés rencontrées..." 
+                              required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn-submit-feedback">Envoyer mon feedback</button>
+                    <a href="{{ url_for('etudiant.dashboard') }}" class="btn-skip">Passer pour l'instant</a>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+    
+    <div class="results-actions">
+        <a href="{{ url_for('etudiant.view_correction', quiz_id=resultat.id_quiz) }}">
+        <button class="btn-correction">📝 Voir la correction détaillée</button>
+    </a>
+        <a href="{{ url_for('etudiant.dashboard') }}">
+            <button>Retour au tableau de bord</button>
+        </a>
+    </div>
+</div>
+{% endblock %}

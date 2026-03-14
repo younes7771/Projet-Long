@@ -1,0 +1,50 @@
+/* components.css: reusable UI pieces */
+.card{
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.btn:hover{ transform: translateY(-1px); }
+.btn:active{ transform: translateY(0); opacity: .9; }
+
+.btn-primary{ background: var(--primary); color: #fff; }
+.btn-accent{ background: var(--accent); color: #fff; }
+.btn-highlight{ background: var(--highlight); color: #000; }
+
+.input, input, select, textarea{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: var(--border);
+  background: var(--surface);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus{
+  box-shadow: 0 0 0 3px rgba(255,215,0,.25);
+}
+
+/* table */
+table{
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+thead{ background: rgba(0,0,0,.04); }
+th, td{ padding: 12px; border-bottom: 1px solid rgba(0,0,0,.06); text-align: left; }
+tbody tr:hover{ background: rgba(0,0,0,.03); }

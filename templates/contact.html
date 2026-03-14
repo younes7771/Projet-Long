@@ -1,0 +1,35 @@
+
+{% extends "base.html" %}
+
+{% block title %}Contact - EvalyQuiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+<div class="contact-page">
+
+    <h1>Contactez-nous</h1>
+    <p>Une question, un problème ou une suggestion ? Envoyez-nous un message.</p>
+
+    <form method="POST" action="{{ url_for('contact.contact') }}" class="contact-form">
+
+        <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Adresse email</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Envoyer</button>
+
+    </form>
+
+</div>
+{% endblock %}

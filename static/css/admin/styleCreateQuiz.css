@@ -1,0 +1,116 @@
+.form-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  background-color: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.form-container h2 {
+  color: var(--primary);
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 28px;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-container input,
+.form-container textarea,
+.form-container select {
+  padding: 12px;
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  background-color: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.form-container input:focus,
+.form-container textarea:focus,
+.form-container select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 87, 51, 0.15);
+}
+
+.form-container textarea {
+  resize: vertical;
+}
+
+.form-container fieldset {
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 15px;
+  background-color: var(--surface-2);
+}
+
+.form-container legend {
+  color: var(--primary);
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--highlight);
+}
+
+.form-container button {
+  padding: 12px;
+  background-color: var(--highlight);
+  color: var(--primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.form-container button:hover {
+  background-color: var(--accent);
+  color: #EEE6D8;
+  transform: translateY(-1px);
+}
+
+.form-container p a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.form-container p a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.form-container .form-title{
+  font-weight: 800;
+}

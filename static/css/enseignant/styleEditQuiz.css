@@ -1,0 +1,231 @@
+.quiz-edit-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.quiz-edit-container h2 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 28px;
+}
+
+.quiz-edit-container h3 {
+  color: var(--primary);
+  margin-bottom: 20px;
+  font-size: 22px;
+  border-bottom: 3px solid var(--highlight);
+  padding-bottom: 10px;
+}
+
+/* Section des questions existantes */
+.existing-questions {
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: var(--radius);
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.question {
+  background-color: var(--surface-2);
+  padding: 15px;
+  border-left: 4px solid var(--highlight);
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.question-header strong {
+  flex: 1;
+}
+
+.question-header span {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.choices-list {
+  list-style: none;
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.choices-list li {
+  color: var(--text);
+  margin: 5px 0;
+  padding: 5px;
+}
+
+.choices-list li::before {
+  content: "• ";
+  color: var(--accent);
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+/* Section d'ajout de question */
+.add-question {
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: var(--radius);
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.add-question form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.add-question input,
+.add-question textarea,
+.add-question select {
+  padding: 12px;
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  background-color: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.add-question input::placeholder,
+.add-question textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.add-question input:focus,
+.add-question textarea:focus,
+.add-question select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 2px rgba(255, 87, 51, 0.15);
+}
+
+.add-question textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row input {
+  flex: 1;
+}
+
+#choix_section {
+  background-color: var(--surface-2);
+  padding: 15px;
+  border-radius: 10px;
+  border: var(--border);
+}
+
+#choix_section p {
+  color: var(--primary);
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.choix-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choix-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.choix-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--highlight);
+}
+
+.choix-item input[type="text"] {
+  flex: 1;
+}
+
+.add-question button {
+  padding: 12px;
+  background-color: var(--highlight);
+  color: var(--text);
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  margin-top: 10px;
+}
+
+.add-question button:hover {
+  background-color: var(--primary);
+  color: var(--surface);
+}
+
+/* Section des actions */
+.quiz-actions {
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: var(--radius);
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.quiz-actions button,
+.quiz-actions a button {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-publish {
+  background-color: var(--primary);
+  color: var(--surface);
+}
+
+.btn-publish:hover {
+  background-color: var(--primary);
+  color: var(--surface);
+}
+
+.btn-back {
+  background-color: var(--primary);
+  color: var(--surface);
+}
+
+.btn-back:hover {
+  background-color: var(--primary);
+  color: var(--surface);
+}
+
+.quiz-actions a {
+  text-decoration: none;
+}

@@ -1,0 +1,183 @@
+
+{% extends "base.html" %}
+
+{% block title %}Passer le quiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/etudiant/styleTakeQuiz.css') }}">
+
+<!-- Overlay de démarrage -->
+<div id="start-overlay" style="position:fixed;inset:0;background:#1a1a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:white;font-family:sans-serif;">
+    <h2 style="font-size:2rem;margin-bottom:1rem;">⚠️ Mode Examen</h2>
+    <p style="margin-bottom:2rem;text-align:center;max-width:420px;line-height:1.6;color:#ccc;">
+        Le quiz se déroulera en <strong style="color:white;">plein écran obligatoire</strong>.<br>
+        Une tentative de sortie vous donnera <strong style="color:#f39c12;">un seul avertissement</strong>.<br>
+        À la deuxième tentative, le quiz sera <strong style="color:#e74c3c;">automatiquement soumis</strong>.
+    </p>
+    <button id="start-exam-btn" style="padding:1rem 2.5rem;font-size:1.1rem;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">
+        Commencer l'examen
+    </button>
+</div>
+
+<!-- Warning overlay (1er avertissement) -->
+<div id="warning-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998;color:white;font-family:sans-serif;">
+    <div style="background:#1a1a2e;border:2px solid #f39c12;border-radius:12px;padding:2.5rem;max-width:420px;text-align:center;">
+        <h2 style="color:#f39c12;margin-bottom:1rem;">⚠️ Avertissement</h2>
+        <p style="color:#ccc;line-height:1.6;margin-bottom:1.5rem;">
+            Vous avez tenté de quitter le mode examen.<br>
+            <strong style="color:white;">C'est votre unique avertissement.</strong><br>
+            Toute nouvelle tentative soumettra automatiquement votre quiz.
+        </p>
+        <button id="back-to-quiz-btn" style="padding:0.8rem 2rem;font-size:1rem;background:#27ae60;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">
+            Reprendre le quiz
+        </button>
+    </div>
+</div>
+
+<div class="container">
+    <h2>{{ quiz.titre }}</h2>
+
+    <form id="quiz-form" method="post" action="{{ url_for('etudiant.submit_quiz', quiz_id=quiz_id) }}">
+        <div id="quiz-content">
+            {% for item in questions %}
+            <div id="question-{{ item.question.id }}" class="question-container" style="display: none;">
+                <div class="question-header">
+                    <h3>Question {{ loop.index }}
+                        <span class="timer" id="timer-{{ item.question.id }}"></span>
+                    </h3>
+                    <p><strong>({{ item.question.bareme }} pts - Temps: {{ item.question.duree }}s)</strong></p>
+                </div>
+
+                <div class="question-body">
+                    <p>{{ item.question.enonce }}</p>
+
+                    {% if item.question.type == 'numerique' %}
+                    <input type="number" name="question_{{ item.question.id }}"
+                           step="any" placeholder="Votre réponse numérique">
+
+                    {% elif item.question.type == 'QCM_simple' or item.question.type == 'Vrai_Faux' %}
+                    <div class="choices">
+                        {% for c in item.choix %}
+                        <label class="choice">
+                            <input type="radio" name="question_{{ item.question.id }}"
+                                   value="{{ c.id }}">
+                            {{ c.texte }}
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    {% elif item.question.type == 'QCM_multiple' %}
+                    <div class="choices">
+                        {% for c in item.choix %}
+                        <label class="choice">
+                            <input type="checkbox" name="question_{{ item.question.id }}"
+                                   value="{{ c.id }}">
+                            {{ c.texte }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="navigation">
+            <button type="button" id="next-btn">Suivant</button>
+            <button type="submit" id="submit-btn" style="display: none;">Soumettre le quiz</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    window.questionsData = {{ questions | tojson }};
+    window.quizId = {{ quiz_id }};
+</script>
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+
+<script>
+let examStarted = false;
+let warningGiven = false;
+let reenteringFullscreen = false;
+
+// ─── Démarrage ────────────────────────────────────────────────────────────────
+document.getElementById('start-exam-btn').addEventListener('click', function () {
+    const el = document.documentElement;
+    (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen).call(el);
+    document.getElementById('start-overlay').style.display = 'none';
+    setTimeout(() => { examStarted = true; }, 500);
+});
+
+// ─── Reprendre le quiz après warning ─────────────────────────────────────────
+document.getElementById('back-to-quiz-btn').addEventListener('click', function () {
+    reenteringFullscreen = true;
+    const el = document.documentElement;
+    (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen).call(el);
+    document.getElementById('warning-overlay').style.display = 'none';
+    setTimeout(() => { reenteringFullscreen = false; }, 800);
+});
+
+// ─── Logique warning / soumission ─────────────────────────────────────────────
+function handleViolation() {
+    if (!examStarted || reenteringFullscreen) return;
+
+    if (!warningGiven) {
+        warningGiven = true;
+        // Quitter le fullscreen pour afficher le warning lisiblement
+        if (document.exitFullscreen) document.exitFullscreen();
+        document.getElementById('warning-overlay').style.display = 'flex';
+    } else {
+        // 2ème violation → soumission automatique
+        document.getElementById('quiz-form').submit();
+    }
+}
+
+// ─── Détection sortie fullscreen ──────────────────────────────────────────────
+document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        handleViolation();
+    }
+});
+document.addEventListener('webkitfullscreenchange', function () {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        handleViolation();
+    }
+});
+
+// ─── Détection changement d'onglet / alt+tab ──────────────────────────────────
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) handleViolation();
+});
+window.addEventListener('blur', function () {
+    // Ne pas déclencher si le warning overlay est affiché (clic sur bouton)
+    if (examStarted && !reenteringFullscreen && document.getElementById('warning-overlay').style.display === 'none') {
+        handleViolation();
+    }
+});
+
+// ─── Blocage raccourcis clavier ───────────────────────────────────────────────
+document.addEventListener('keydown', function (e) {
+    if (
+        e.key === 'F11' ||
+        (e.altKey && e.key === 'Tab') ||
+        (e.altKey && e.key === 'F4') ||
+        (e.ctrlKey && ['w', 't', 'n', 'Tab'].includes(e.key))
+    ) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    // Escape : bloquer si warning déjà donné, sinon laisser passer (fullscreenchange s'en charge)
+    if (e.key === 'Escape' && warningGiven) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+}, true);
+
+// ─── Blocage navigation arrière/avant ─────────────────────────────────────────
+window.addEventListener('popstate', function () {
+    location.replace(location.href);
+});
+</script>
+
+{% endblock %}

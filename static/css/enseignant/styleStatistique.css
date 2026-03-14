@@ -1,0 +1,142 @@
+.stats-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.stats-container h2 {
+  color: #93441A;
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 28px;
+}
+
+.stats-container h3 {
+  color: #93441A;
+  margin-bottom: 20px;
+  font-size: 22px;
+  border-bottom: 3px solid #DAAB3A;
+  padding-bottom: 10px;
+}
+
+/* Cartes de statistiques */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background-color: #EEE6D8;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-left: 4px solid #DAAB3A;
+}
+
+.stat-card h3 {
+  color: #93441A;
+  margin-bottom: 15px;
+  font-size: 18px;
+  border: none;
+  padding: 0;
+}
+
+.stat-value {
+  color: #DAAB3A;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+/* Tableau des résultats */
+.stats-container table {
+  width: 100%;
+  background-color: #EEE6D8;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.stats-container table thead {
+  background-color: #B67332;
+  color: #EEE6D8;
+}
+
+.stats-container table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.stats-container table td {
+  padding: 15px;
+  border-bottom: 1px solid #DAAB3A;
+  color: #93441A;
+  font-size: 14px;
+}
+
+.stats-container table tbody tr:hover {
+  background-color: #DAAB3A;
+}
+
+.stats-container table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.actions a {
+  text-decoration: none;
+}
+
+.actions button {
+  padding: 12px 30px;
+  background-color: #DAAB3A;
+  color: #93441A;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.actions button:hover {
+  background-color: #B67332;
+  color: #EEE6D8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-container {
+    margin: 20px auto;
+  }
+
+  .stats-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-container table {
+    font-size: 14px;
+  }
+
+  .stats-container table th,
+  .stats-container table td {
+    padding: 10px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+  }
+}

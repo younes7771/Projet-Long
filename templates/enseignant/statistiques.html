@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiques du quiz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enseignant/styleStatistique.css') }}">
+<div class="stats-container">
+    <h2>Statistiques du quiz: {{ quiz.titre }}</h2>
+    
+    <div class="stats-overview">
+        <div class="stat-card">
+            <h3>Score moyen</h3>
+            <div class="stat-value">{{ "%.2f"|format(avg_score) }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Nombre d'étudiants</h3>
+            <div class="stat-value">{{ resultats|length }}</div>
+        </div>
+    </div>
+    
+    <h3>Résultats des étudiants</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Date</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultats %}
+            <tr>
+                <td>{{ r.prenom }} {{ r.nom }}</td>
+                <td>{{ r.date_soumission }}</td>
+                <td>{{ r.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="actions" style="margin-top: 20px;">
+        <a href="{{ url_for('enseignant.export_quiz', quiz_id=quiz.id) }}">
+            <button>Exporter en CSV</button>
+        </a>
+         <a href="{{ url_for('enseignant.export_quiz_pdf', quiz_id=quiz.id) }}">
+            <button>Exporter en PDF</button>
+        </a>
+        <a href="{{ url_for('enseignant.dashboard') }}">
+            <button>Retour au tableau de bord</button>
+        </a>
+    </div>
+</div>
+{% endblock %}

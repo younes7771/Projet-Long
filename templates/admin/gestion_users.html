@@ -1,0 +1,268 @@
+
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Gestion des utilisateurs - Administration{% endblock %}
+
+{% block content %}
+<div class="gestion-users-container">
+    <div class="users-toolbar">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-plus me-2"></i>Ajouter un utilisateur
+        </button>
+
+        <div class="user-search-box">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                id="userSearch"
+                class="user-search-input"
+                placeholder="Rechercher un utilisateur..."
+                onkeyup="filterUsers()"
+            >
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Ajouter un utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm" method="POST" action="{{ url_for('admin.add_user') }}">
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rôle</label>
+                            <select class="form-control" id="role" name="role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="admin">Admin</option>
+                                <option value="enseignant">Enseignant</option>
+                                <option value="etudiant">Étudiant</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="groupeDiv" style="display:none;">
+                            <label for="groupe" class="form-label">Groupe</label>
+                            <select class="form-control" id="groupe" name="groupe">
+                                <option value="">Sélectionner un groupe</option>
+                                {% for g in groupes %}
+                                    <option value="{{ g.id }}">{{ g.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('addUserForm').submit()">Ajouter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Modifier l'utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm" method="POST" action="{{ url_for('admin.edit_user') }}">
+                        <input type="hidden" id="editUserId" name="user_id">
+
+                        <div class="mb-3">
+                            <label for="editNom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="editNom" name="nom" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPrenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editRole" class="form-label">Rôle</label>
+                            <select class="form-control" id="editRole" name="role" required>
+                                <option value="">Sélectionner un rôle</option>
+                                {% for r in roles %}
+                                    <option value="{{ r }}" {% if r == selected_role %}selected{% endif %}>{{ r|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="editGroupeDiv" style="display:none;">
+                            <label for="editGroupe" class="form-label">Groupe</label>
+                            <select class="form-control" id="editGroupe" name="groupe">
+                                <option value="">Sélectionner un groupe</option>
+                                {% for g in groupes %}
+                                    <option value="{{ g.id }}" {% if g.id == selected_groupe %}selected{% endif %}>{{ g.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editPassword" class="form-label">Mot de passe (laisser vide pour ne pas changer)</label>
+                            <input type="password" class="form-control" id="editPassword" name="password" placeholder="Mot de passe">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-warning" onclick="document.getElementById('editUserForm').submit()">Modifier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-responsive mt-3">
+        <table class="gestion-users-table" id="usersTable">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Nom</th>
+                    <th class="text-center">Email</th>
+                    <th class="text-center">Prénom</th>
+                    <th class="text-center">Rôle</th>
+                    <th class="text-center">Date de création</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="align-middle">
+                    <td>{{ user.nom }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.prenom }}</td>
+                    <td class="text-center">
+                        <span class="role-badge role-{{ user.role }}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td class="date-creation">{{ user.date_creation.strftime("%d/%m/%Y") if user.date_creation else "" }}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-warning"
+                                onclick="openEditModal({{ user.id }}, '{{ user.nom }}', '{{ user.prenom }}', '{{ user.email }}', '{{ user.role }}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+
+                        <a href="#" class="btn btn-sm btn-danger"
+                           onclick="if(confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) { document.getElementById('deleteUserForm{{ user.id }}').submit(); } return false;">
+                            <i class="fas fa-trash"></i>
+                        </a>
+
+                        <form id="deleteUserForm{{ user.id }}" method="POST" action="{{ url_for('admin.delete_user') }}" style="display:none;">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Aucun utilisateur trouvé</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterUsers() {
+        const input = document.getElementById('userSearch');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const rowText = rows[i].innerText.toLowerCase();
+            rows[i].style.display = rowText.includes(filter) ? '' : 'none';
+        }
+    }
+
+    function openEditModal(id, nom, prenom, email, role) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editNom').value = nom;
+        document.getElementById('editPrenom').value = prenom;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editRole').value = role;
+        document.getElementById('editPassword').value = '';
+
+        const editRole = document.getElementById('editRole');
+        const editGroupeDiv = document.getElementById('editGroupeDiv');
+        const editGroupe = document.getElementById('editGroupe');
+
+        if (editRole.value === 'etudiant') {
+            editGroupeDiv.style.display = 'block';
+            editGroupe.setAttribute('required', 'required');
+        } else {
+            editGroupeDiv.style.display = 'none';
+            editGroupe.removeAttribute('required');
+        }
+
+        var editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        editModal.show();
+    }
+
+    console.log("JS chargé");
+
+    document.getElementById('role').addEventListener('change', function() {
+        var role = this.value;
+        var groupeDiv = document.getElementById('groupeDiv');
+
+        if (role === 'etudiant') {
+            groupeDiv.style.display = 'block';
+            document.getElementById('groupe').setAttribute('required', 'required');
+        } else {
+            groupeDiv.style.display = 'none';
+            document.getElementById('groupe').removeAttribute('required');
+        }
+    });
+
+    document.getElementById('editRole').addEventListener('change', function() {
+        var role = this.value;
+        var groupeDiv = document.getElementById('editGroupeDiv');
+
+        if (role === 'etudiant') {
+            groupeDiv.style.display = 'block';
+            document.getElementById('editGroupe').setAttribute('required', 'required');
+        } else {
+            groupeDiv.style.display = 'none';
+            document.getElementById('editGroupe').removeAttribute('required');
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var role = document.getElementById('editRole').value;
+        if (role === 'etudiant') {
+            document.getElementById('editGroupeDiv').style.display = 'block';
+            document.getElementById('editGroupe').setAttribute('required', 'required');
+        }
+    });
+</script>
+{% endblock %}

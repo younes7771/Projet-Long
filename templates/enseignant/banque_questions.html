@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+
+{% block title %}Banque de Questions{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>📚 Banque de Questions</h1>
+        <p>Gérez votre bibliothèque de questions réutilisables</p>
+    </div>
+
+    <div class="dashboard-section">
+        <div class="section-header">
+            <div>
+                <h2>Vos Questions Réutilisables</h2>
+                <p>Ajoutez, modifiez et réutilisez vos questions dans différents quiz</p>
+            </div>
+            <div class="header-actions">
+                <button onclick="openModal('addQuestionModal')" class="btn">
+                    ➕ Nouvelle Question
+                </button>
+                <a href="{{ url_for('enseignant.dashboard') }}" class="btn btn-secondary">
+                    ← Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistiques de la banque -->
+        <div class="banque-stats">
+            <div class="banque-stat">
+                <span class="stat-number">{{ questions|length }}</span>
+                <span class="stat-label">Questions totales</span>
+            </div>
+            <div class="banque-stat">
+                <span class="stat-number">
+                    {{ questions|selectattr('type', 'equalto', 'QCM_simple')|list|length }}
+                </span>
+                <span class="stat-label">QCM Simples</span>
+            </div>
+            <div class="banque-stat">
+                <span class="stat-number">
+                    {{ questions|selectattr('type', 'equalto', 'QCM_multiple')|list|length }}
+                </span>
+                <span class="stat-label">QCM Multiples</span>
+            </div>
+            <div class="banque-stat">
+                <span class="stat-number">
+                    {{ questions|selectattr('type', 'equalto', 'numerique')|list|length }}
+                </span>
+                <span class="stat-label">Numériques</span>
+            </div>
+        </div>
+
+        <!-- Filtres et recherche -->
+        <div class="filters-section">
+            <div class="search-box">
+                <input type="text" id="searchQuestions" placeholder="🔍 Rechercher une question..." 
+                       onkeyup="filterQuestions()">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByType('all')">Tous</button>
+                <button class="filter-btn" onclick="filterByType('QCM_simple')">QCM Simple</button>
+                <button class="filter-btn" onclick="filterByType('QCM_multiple')">QCM Multiple</button>
+                <button class="filter-btn" onclick="filterByType('Vrai_Faux')">Vrai/Faux</button>
+                <button class="filter-btn" onclick="filterByType('numerique')">Numérique</button>
+            </div>
+        </div>
+
+        <!-- Liste des questions -->
+        <div class="questions-grid" id="questionsContainer">
+            {% if questions %}
+                {% for question in questions %}
+                <div class="question-card" 
+                     data-type="{{ question.type }}"
+                     data-search="{{ question.enonce|lower }} {{ question.type|lower }} {{ question.matiere_nom|lower if question.matiere_nom else '' }}">
+                    <div class="question-header">
+                        <div class="question-type-badge type-{{ question.type }}">
+                            {{ question.type|replace('_', ' ')|title }}
+                        </div>
+                        <div class="question-meta">
+                            <span class="points">{{ question.bareme }} pts</span>
+                            <span class="duration">{{ question.duree }}s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="question-content">
+                        <h4>{{ question.enonce }}</h4>
+                        
+                        {% if question.matiere_nom %}
+                        <div class="question-tag">
+                            📖 {{ question.matiere_nom }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="question-date">
+                            Créé le {{ question.date_creation[:10] if question.date_creation else 'N/A' }}
+                        </div>
+                    </div>
+                    
+                    <div class="question-actions">
+                        <button onclick="useQuestionInQuiz({{ question.id }})" class="btn btn-success">
+                            ➕ Utiliser dans un Quiz
+                        </button>
+                        <button onclick="editQuestion({{ question.id }})" class="btn">
+                            ✏️ Modifier
+                        </button>
+                        <form method="post" action="{{ url_for('enseignant.delete_question') }}" 
+                              style="display: inline;" onsubmit="return confirm('Supprimer cette question?')">
+                            <input type="hidden" name="question_id" value="{{ question.id }}">
+                            <button type="submit" class="btn btn-danger">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3>Aucune question dans la banque</h3>
+                    <p>Commencez par ajouter votre première question réutilisable !</p>
+                    <button onclick="openModal('addQuestionModal')" class="btn">
+                        ➕ Créer une Question
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'ajout de question -->
+<div id="addQuestionModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addQuestionModal')">&times;</span>
+        <h2>➕ Ajouter une Question</h2>
+        
+        <form method="post" action="{{ url_for('enseignant.add_question') }}">
+            <input type="hidden" name="est_dans_banque" value="1">
+            
+            <div class="form-group">
+                <label>Énoncé de la question *</label>
+                <textarea name="enonce" placeholder="Saisissez l'énoncé de la question..." required rows="4"></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Type de question *</label>
+                    <select name="type" id="modalType" onchange="updateModalChoices()" required>
+                        <option value="">Sélectionner un type</option>
+                        <option value="QCM_simple">QCM simple</option>
+                        <option value="QCM_multiple">QCM multiple</option>
+                        <option value="Vrai_Faux">Vrai/Faux</option>
+                        <option value="numerique">Numérique</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Barème *</label>
+                    <input type="number" name="bareme" step="0.5" value="1" min="0.5" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Durée (secondes) *</label>
+                    <input type="number" name="duree" value="60" min="10" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Matière (optionnel)</label>
+                <select name="matiere">
+                    <option value="">Sélectionner une matière</option>
+                    {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="modalChoicesSection" style="display: none;">
+                <div class="form-group">
+                    <label>Choix de réponses *</label>
+                    <div class="choix-container">
+                        {% for i in range(4) %}
+                        <div class="choix-item">
+                            <input type="checkbox" name="correct[]" value="{{ i }}" id="correct{{ i }}">
+                            <input type="text" name="choix[]" placeholder="Choix {{ i + 1 }}" 
+                                   oninput="updateChoiceLabel({{ i }})" required>
+                            <label for="correct{{ i }}" class="choice-label" id="choiceLabel{{ i }}">
+                                Marquer comme correct
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <small>Cochez les réponses correctes. Pour QCM simple, une seule réponse correcte.</small>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addQuestionModal')">
+                    Annuler
+                </button>
+                <button type="submit" class="btn">💾 Ajouter à la banque</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: var(--white);
+    padding: 40px;
+    border-radius: 16px;
+}
+
+.page-header h1 {
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.banque-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.banque-stat {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+.filters-section {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.search-box {
+    margin-bottom: 15px;
+}
+
+.search-box input {
+    width: 100%;
+    margin: 0;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--light);
+    background: var(--white);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+.questions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.question-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    border-left: 4px solid var(--primary);
+    transition: transform 0.3s;
+}
+
+.question-card:hover {
+    transform: translateY(-5px);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.question-type-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.type-QCM_simple { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.type-QCM_multiple { background: rgba(0, 123, 255, 0.1); color: #007bff; }
+.type-Vrai_Faux { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.type-numerique { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
+
+.question-meta {
+    display: flex;
+    gap: 8px;
+}
+
+.question-meta span {
+    background: var(--cream);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.question-content h4 {
+    margin-bottom: 15px;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.question-tag {
+    display: inline-block;
+    background: var(--light);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+}
+
+.question-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.question-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    grid-column: 1 / -1;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    margin-bottom: 10px;
+    color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+    .questions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+    }
+    
+    .question-actions {
+        flex-direction: column;
+    }
+    
+    .question-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function updateModalChoices() {
+    const type = document.getElementById('modalType').value;
+    const choixSection = document.getElementById('modalChoicesSection');
+    
+    if (type === 'QCM_simple' || type === 'QCM_multiple' || type === 'Vrai_Faux') {
+        choixSection.style.display = 'block';
+        // Rendre les choix requis
+        document.querySelectorAll('input[name="choix[]"]').forEach(input => {
+            input.required = true;
+        });
+    } else {
+        choixSection.style.display = 'none';
+        // Rendre les choix non requis
+        document.querySelectorAll('input[name="choix[]"]').forEach(input => {
+            input.required = false;
+        });
+    }
+}
+
+function updateChoiceLabel(index) {
+    const input = document.querySelector(`input[name="choix[]"][placeholder="Choix ${index + 1}"]`);
+    const label = document.getElementById(`choiceLabel${index}`);
+    if (input && label && input.value) {
+        label.textContent = `Marquer "${input.value}" comme correct`;
+    } else {
+        label.textContent = 'Marquer comme correct';
+    }
+}
+
+function filterQuestions() {
+    const searchTerm = document.getElementById('searchQuestions').value.toLowerCase();
+    const questions = document.querySelectorAll('.question-card');
+    
+    questions.forEach(question => {
+        const searchData = question.getAttribute('data-search');
+        if (searchData.includes(searchTerm)) {
+            question.style.display = '';
+        } else {
+            question.style.display = 'none';
+        }
+    });
+}
+
+function filterByType(type) {
+    // Mettre à jour les boutons de filtre
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    const questions = document.querySelectorAll('.question-card');
+    
+    questions.forEach(question => {
+        if (type === 'all' || question.getAttribute('data-type') === type) {
+            question.style.display = '';
+        } else {
+            question.style.display = 'none';
+        }
+    });
+}
+
+function useQuestionInQuiz(questionId) {
+    // Rediriger vers la page de création de quiz avec la question présélectionnée
+    window.location.href = "{{ url_for('enseignant.create_quiz') }}?question=" + questionId;
+}
+
+function editQuestion(questionId) {
+    // Implémenter l'édition de question
+    alert('Fonctionnalité d\'édition à implémenter pour la question #' + questionId);
+}
+
+// Fermer la modal en cliquant à l'extérieur
+window.onclick = function(event) {
+    const modals = document.getElementsByClassName('modal');
+    for (let modal of modals) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+}
+
+// Fermer avec la touche Échap
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modals = document.getElementsByClassName('modal');
+        for (let modal of modals) {
+            modal.style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+:root{
+  --bg:#E8E4DB;
+  --surface:#ffffff;
+  --surface-2:#f3f3f3;
+
+  --primary:#005F6B;
+  --accent:#ff5733;
+  --highlight:#ffd700;
+
+  --text:#1f1f1f;
+  --text-muted:#444444;
+
+  --radius:16px;
+  --shadow:0 10px 30px rgba(0,0,0,.08);
+  --border:1px solid rgba(0,0,0,.08);
+}
+
+body{
+  background: var(--bg);
+  color: var(--text);
+}
+
+:root{
+  --bs-primary: var(--primary);
+  --bs-warning: var(--highlight);
+  --bs-danger: var(--accent);
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--text);
+}
+
+.btn-yellow {
+  background-color: var(--highlight); /* #ffd700 */
+  color: #000;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  transition: all 0.25s ease;
+}
+
+.btn-yellow:hover {
+  background-color: var(--accent);   /* #ff5733 */
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.password-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.password-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 2px solid var(--primary);
+    background-color: #eaf3ff;
+    font-size: 0.95rem;
+}
+
+.password-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.25);
+}
+
+.toggle-password {
+    background-color: var(--highlight);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.toggle-password:hover {
+    background-color: var(--accent);
+}

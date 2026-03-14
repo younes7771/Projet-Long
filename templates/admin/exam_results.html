@@ -1,0 +1,109 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Résultats des examens{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleResult.css') }}">
+
+<div class="results-container">
+    <h2>Résultats des examens</h2>
+
+    {% if examens %}
+        {% for exam in examens %}
+        <section class="exam-results">
+            <h3>{{ exam.titre }}</h3>
+            <p>Matière : {{ exam.matiere.nom }}</p>
+            <p>Enseignant : {{ exam.enseignant.nom }} {{ exam.enseignant.prenom }}</p>
+
+            {% if exam.resultats %}
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Date de soumission</th>
+                        <th>Score</th>
+                        <th>Pourcentage</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resultat in exam.resultats %}
+                    <tr>
+                        <td>{{ resultat.prenom }} {{ resultat.nom }}</td>
+                        <td>{{ resultat.date_soumission }}</td>
+                        <td>{{ resultat.score }}/{{ resultat.points_max }}</td>
+                        <td>{{ "%.1f"|format((resultat.score / resultat.points_max * 100) if resultat.points_max > 0 else 0) }}%</td>
+                        <td>
+                            <a href="{{ url_for('admin.view_resultat', resultat_id=resultat.id) }}">
+                                <button>Détails</button>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Aucun résultat enregistré pour cet examen.</p>
+            {% endif %}
+        </section>
+        {% endfor %}
+    {% else %}
+        <p>Aucun examen disponible.</p>
+    {% endif %}
+</div>
+
+<style>
+.results-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+.exam-results {
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+.exam-results h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.results-table th, .results-table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.results-table th {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.results-table button {
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.results-table button:hover {
+    background-color: #218838;
+}
+</style>
+{% endblock %}

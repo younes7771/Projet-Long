@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth/styleRegister.css') }}">
+<div class="register-container">
+    <h2>Inscription</h2>
+    
+    <form method="post">
+        <input type="text" name="nom" placeholder="Nom" required>
+        <input type="text" name="prenom" placeholder="Prénom" required>
+        <input type="date" name="date_naissance" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Mot de passe" required>
+        
+        <select name="role" required onchange="toggleGroupeField()">
+            <option value="">Sélectionner un rôle</option>
+            <option value="enseignant">Enseignant</option>
+            <option value="etudiant">Étudiant</option>
+        </select>
+        
+        <select name="groupe" id="groupe-field" style="display: none;">
+            <option value="">Sélectionner un groupe</option>
+            {% for groupe in groupes %}
+            <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit">S'inscrire</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        <a href="{{ url_for('auth.login') }}">Déjà inscrit ? Se connecter</a>
+    </p>
+</div>
+
+<script>
+function toggleGroupeField() {
+    const role = document.querySelector('select[name="role"]').value;
+    const groupeField = document.getElementById('groupe-field');
+    
+    if (role === 'etudiant') {
+        groupeField.style.display = 'block';
+        groupeField.required = true;
+    } else {
+        groupeField.style.display = 'none';
+        groupeField.required = false;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Gestion des Examens{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleAdmin.css') }}">
+
+<h2 class="admin-title">Gestion des Examens</h2>
+
+<div class="admin-sections">
+
+<!-- ==================== SECTION MATIÈRES ==================== -->
+<section class="admin-section">
+    <h2 class="admin-section-title">Matières</h2>
+
+    <!-- Formulaire d'ajout -->
+    <form class="admin-form-row" method="post" action="{{ url_for('admin.add_matiere') }}">
+        <input class="admin-input" type="text" name="nom" placeholder="Nom de la matière" required>
+
+        <!-- Sélection d’un enseignant -->
+        <select class="admin-select" name="id_user" required>
+            <option value="">-- Sélectionner un enseignant --</option>
+            {% if enseignants %}
+                {% for prof in enseignants %}
+                    <option value="{{ prof.id }}">{{ prof.nom }} {{ prof.prenom }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled>Aucun enseignant disponible</option>
+            {% endif %}
+        </select>
+
+        <button class="btn btn-primary admin-btn" type="submit">Ajouter matière</button>
+    </form>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Enseignant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if matieres %}
+                    {% for matiere in matieres %}
+                        <!-- Ligne matière -->
+                        <tr id="matiere-{{ matiere['id'] }}">
+                            <td>{{ matiere['nom'] }}</td>
+                            <td>{{ matiere['enseignant'] }}</td>
+                            <td class="admin-action">
+                                <button type="button"
+                                        class="btn btn-sm btn-warning"
+                                        onclick="toggleEditForm({{ matiere['id'] }})">
+                                    Éditer
+                                </button>
+
+                                <form method="post"
+                                        action="{{ url_for('admin.delete_matiere', matiere_id=matiere['id']) }}"
+                                        style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Confirmer la suppression ?')">
+                                    Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Formulaire d'édition dynamique -->
+                        <tr id="edit-form-{{ matiere['id'] }}" style="display:none;">
+                            <td colspan="3">
+                                <form method="post" action="{{ url_for('admin.edit_matiere', matiere_id=matiere['id']) }}">
+                                    <input type="text" name="nom" value="{{ matiere['nom'] }}" required>
+
+                                    <select name="id_enseignant" required>
+                                        {% for prof in enseignants %}
+                                            <option value="{{ prof.id }}" {% if prof.id == matiere['id_user'] %}selected{% endif %}>
+                                                {{ prof.nom }} {{ prof.prenom }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <button type="submit">Enregistrer</button>
+                                    <button type="button" onclick="toggleEditForm({{ matiere['id'] }})">Annuler</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">Aucune matière enregistrée</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+function toggleEditForm(id) {
+    const formRow = document.getElementById(`edit-form-${id}`);
+    formRow.style.display = (formRow.style.display === "none") ? "table-row" : "none";
+}
+</script>
+
+
+<!-- ==================== SECTION GROUPES ==================== -->
+<section class="admin-section">
+    <h2 class="admin-section-title">Groupes</h2>
+
+    <!-- Formulaire d'ajout -->
+    <form class="admin-form-row" method="post" action="{{ url_for('admin.add_groupe') }}">
+        <input class="admin-input" type="text" name="nom" placeholder="Nom du groupe" required>
+
+        <!-- Sélection d’un enseignant -->
+        <select class="admin-select" name="id_user" required>
+            <option value="">-- Sélectionner un enseignant --</option>
+            {% if enseignants %}
+                {% for prof in enseignants %}
+                    <option value="{{ prof.id }}">{{ prof.nom }} {{ prof.prenom }}</option>
+                {% endfor %}
+            {% else %}
+                <option disabled>Aucun enseignant disponible</option>
+            {% endif %}
+        </select>
+
+        <button class="btn btn-primary admin-btn" type="submit">Ajouter groupe</button>
+    </form>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Enseignant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if groupes %}
+                    {% for groupe in groupes %}
+                        <!-- Ligne groupe -->
+                        <tr id="groupe-{{ groupe['id'] }}">
+                            <td>{{ groupe['nom'] }}</td>
+                            <td>{{ groupe['enseignant'] }}</td>
+                            <td class="admin-action">
+                                <button type="button"
+                                        class="btn btn-sm btn-warning"
+                                        onclick="toggleEditGroupeForm({{ groupe['id'] }})">
+                                    Éditer
+                                </button>
+
+                                <form method="post"
+                                        action="{{ url_for('admin.delete_groupe', groupe_id=groupe['id']) }}"
+                                        style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Confirmer la suppression ?')">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Formulaire d'édition inline -->
+                        <tr id="edit-groupe-form-{{ groupe['id'] }}" style="display:none;">
+                            <td colspan="3">
+                                <form method="post" action="{{ url_for('admin.edit_groupe', groupe_id=groupe['id']) }}">
+                                    <input type="text" name="nom" value="{{ groupe['nom'] }}" required>
+
+                                    <select name="id_enseignant" required>
+                                        {% for prof in enseignants %}
+                                            <option value="{{ prof.id }}" {% if prof.id == groupe['id_user'] %}selected{% endif %}>
+                                                {{ prof.nom }} {{ prof.prenom }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <button type="submit">Enregistrer</button>
+                                    <button type="button" onclick="toggleEditGroupeForm({{ groupe['id'] }})">Annuler</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">Aucun groupe enregistré</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+function toggleEditGroupeForm(id) {
+    const formRow = document.getElementById(`edit-groupe-form-${id}`);
+    formRow.style.display = (formRow.style.display === "none") ? "table-row" : "none";
+}
+</script>
+
+
+<!-- ==================== SECTION EXAMENS ==================== -->
+<section class="admin-section">
+    <h2 class="admin-section-title">Examens</h2>
+
+    <a href="{{ url_for('admin.create_exam') }}"
+        class="btn btn-primary admin-btn mb-3">
+            Créer un nouvel examen
+    </a>
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if exams %}
+                    {% for exam in exams %}
+                        <tr>
+                            <td>{{ exam["titre"] }}</td>
+                            <td>{{ exam["status"] }}</td>
+                            <td class="admin-action">
+                                <a class="btn btn-sm btn-warning"
+                                    href="{{ url_for('admin.edit_exam', exam_id=exam['id']) }}">
+                                    Éditer
+                                </a>
+                                
+                                <a class="btn btn-sm btn-secondary" href="">
+                                    Résultats
+                                </a>
+
+                                <form method="post"
+                                        action="{{ url_for('admin.delete_exam', exam_id=exam['id']) }}"
+                                        style="display:inline;">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Confirmer la suppression ?')">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">Aucun examen enregistré</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EvalyQuiz{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="brand" href="{{ url_for('dashboard') }}">
+                <img class="brand-logo"
+                     src="{{ url_for('static', filename='images/LOGO.jpeg') }}"
+                     alt="EvalyQuiz logo">
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Accueil</a>
+                <a href="#">Démonstration</a>
+                <a href="{{ url_for('auth.profile') }}">Mon profil</a>
+                <a href="{{ url_for('contact.contact') }}">Contact</a>
+
+                {% if session.user_id %}
+                    <span>Bonjour {{ session.prenom }} {{ session.nom }}</span>
+                    {% if session.groupe %}
+                        <span>(Groupe: {{ session.groupe }})</span>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}">Déconnexion</a>
+                {% endif %}
+                
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
