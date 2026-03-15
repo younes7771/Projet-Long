@@ -77,69 +77,179 @@
 </div>
 
 <style>
+.quiz-edit-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 40px;
+  background-color: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.quiz-edit-container h2 {
+  color: var(--primary);
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 28px;
+}
+
 .question-edit-box {
-    background: var(--light);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
+
+.question-edit-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .question-edit-box label {
-    display:block;
-    margin-top:10px;
+  color: var(--text);
+  font-size: 14px;
+  display: block;
+  margin-bottom: 8px;
 }
-textarea, input[type="text"], input[type="number"] {
-    width:100%;
-    padding:8px;
-    margin-top:5px;
-    border-radius:5px;
-    border:1px solid #ccc;
+
+.question-edit-box textarea,
+.question-edit-box input[type="text"],
+.question-edit-box input[type="number"] {
+  padding: 12px;
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  background-color: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
 }
+
+.question-edit-box textarea::placeholder,
+.question-edit-box input::placeholder {
+  color: var(--text-muted);
+}
+
+.question-edit-box textarea:focus,
+.question-edit-box input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: var(--surface);
+  box-shadow: 0 0 0 2px rgba(255, 87, 51, 0.15);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choices-edit-section {
+  padding: 20px;
+  background-color: var(--surface-2);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.choices-edit-section h3 {
+  color: var(--primary);
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
 .choix-item {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background-color: var(--surface);
+  border-radius: 8px;
 }
+
+.choix-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.choix-item input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  background-color: var(--surface-2);
+  color: var(--text);
+}
+
+.num-edit {
+  padding: 20px;
+  background-color: var(--surface-2);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.num-edit label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.num-edit input[type="number"] {
+  width: 100%;
+}
+
 .edit-actions {
-    margin-top:20px;
-    display:flex;
-    gap:15px;
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: center;
 }
 
-/* Save */
-.btn-save {
-    background-color:#28a745;
-    color:white;
-    padding:8px 15px;
-    border:none;
-    border-radius:5px;
-}
-.btn-save:hover {
-    background-color:#218838;
-}
-
-/* Delete */
-.btn-delete {
-    background-color:#dc3545;
-    color:white;
-    padding:8px 15px;
-    border:none;
-    border-radius:5px;
-}
-.btn-delete:hover {
-    background-color:#c82333;
-}
-
-/* Retour */
+.btn-save,
 .btn-back {
-    background-color:#6c757d;
-    color:white;
-    padding:8px 15px;
-    border:none;
-    border-radius:5px;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
+
+.btn-save {
+  background-color: var(--highlight);
+  color: #000;
+}
+
+.btn-save:hover {
+  background-color: var(--primary);
+  color: var(--surface);
+  transform: translateY(-2px);
+}
+
+.btn-back {
+  background-color: var(--surface-2);
+  color: var(--text);
+  border: 2px solid var(--primary);
+}
+
 .btn-back:hover {
-    background-color:#5a6268;
+  background-color: var(--primary);
+  color: var(--surface);
+  transform: translateY(-2px);
+}
+
+.btn-back a {
+  text-decoration: none;
+  color: inherit;
 }
 </style>
 

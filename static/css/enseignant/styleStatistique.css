@@ -5,17 +5,17 @@
 }
 
 .stats-container h2 {
-  color: #93441A;
+  color: var(--primary);
   text-align: center;
   margin-bottom: 40px;
   font-size: 28px;
 }
 
 .stats-container h3 {
-  color: #93441A;
+  color: var(--primary);
   margin-bottom: 20px;
   font-size: 22px;
-  border-bottom: 3px solid #DAAB3A;
+  border-bottom: 3px solid var(--highlight);
   padding-bottom: 10px;
 }
 
@@ -28,16 +28,16 @@
 }
 
 .stat-card {
-  background-color: #EEE6D8;
+  background-color: var(--surface-2);
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
-  border-left: 4px solid #DAAB3A;
+  border-left: 4px solid var(--highlight);
 }
 
 .stat-card h3 {
-  color: #93441A;
+  color: var(--primary);
   margin-bottom: 15px;
   font-size: 18px;
   border: none;
@@ -45,7 +45,7 @@
 }
 
 .stat-value {
-  color: #DAAB3A;
+  color: var(--highlight);
   font-size: 48px;
   font-weight: bold;
 }
@@ -53,7 +53,7 @@
 /* Tableau des résultats */
 .stats-container table {
   width: 100%;
-  background-color: #EEE6D8;
+  background-color: var(--surface-2);
   border-collapse: collapse;
   border-radius: 8px;
   overflow: hidden;
@@ -62,8 +62,8 @@
 }
 
 .stats-container table thead {
-  background-color: #B67332;
-  color: #EEE6D8;
+  background-color: var(--accent);
+  color: var(--surface-2);
 }
 
 .stats-container table th {
@@ -75,13 +75,13 @@
 
 .stats-container table td {
   padding: 15px;
-  border-bottom: 1px solid #DAAB3A;
-  color: #93441A;
+  border-bottom: 1px solid var(--highlight);
+  color: var(--primary);
   font-size: 14px;
 }
 
 .stats-container table tbody tr:hover {
-  background-color: #DAAB3A;
+  background-color: var(--highlight);
 }
 
 .stats-container table tbody tr:last-child td {
@@ -102,19 +102,20 @@
 
 .actions button {
   padding: 12px 30px;
-  background-color: #DAAB3A;
-  color: #93441A;
+  background-color: var(--highlight);
+  color: var(--primary);
   border: none;
   border-radius: 4px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .actions button:hover {
-  background-color: #B67332;
-  color: #EEE6D8;
+  background-color: var(--accent);
+  color: var(--surface-2);
+  transform: translateY(-2px);
 }
 
 /* Responsive */

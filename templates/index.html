@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Accueil - Quiz App{% endblock %}
+{% block title %}Accueil - EvalyQuiz{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
@@ -19,11 +19,11 @@
                 {% endif %}
             </div>
         </div>
-        <div class="hero-image">
+        <!-- <div class="hero-image">
             <div class="placeholder-image">
                 <i class="icon-quiz"></i>
             </div>
-        </div>
+        </div> -->
     </section>
 
     <!-- Features Section -->
@@ -137,7 +137,7 @@
         <h2>Prêt à commencer ?</h2>
         <p>Rejoignez notre communauté d'apprentissage interactif</p>
         {% if not session.user_id %}
-            <a href="{{ url_for('auth.register') }}" class="btn btn-large">Créer un compte gratuit</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-large">Créer un compte</a>
         {% else %}
             <a href="{{ url_for('dashboard') }}" class="btn btn-large">Accéder à mon espace</a>
         {% endif %}
