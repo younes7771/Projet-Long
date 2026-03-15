@@ -51,7 +51,7 @@
         {% else %}
             <form method="post" action="{{ url_for('etudiant.submit_feedback', quiz_id=resultat.id_quiz) }}" class="feedback-form">
                 <div class="form-group">
-                    <label for="note">Notez ce quiz (optionnel):</label>
+                    <label for="note">Notez ce quiz:</label>
                     <div class="star-rating">
                         {% for i in range(5, 0, -1) %}
                         <input type="radio" id="star{{ i }}" name="note" value="{{ i }}" class="star-input">
@@ -61,7 +61,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="texte">Votre commentaire (obligatoire):</label>
+                    <label for="texte">Votre commentaire:</label>
                     <textarea id="texte" name="texte" rows="4" 
                               placeholder="Partagez votre expérience, suggestions ou difficultés rencontrées..." 
                               required></textarea>
