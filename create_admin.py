@@ -26,9 +26,9 @@ def create_admin_user():
     # Créer l'utilisateur admin
     password_hash = generate_password_hash('admin123')
     c.execute('''
-        INSERT INTO user (nom, prenom, email, password_hash, id_role) 
-        VALUES (?, ?, ?, ?, ?)
-    ''', ('Admin', 'System', 'admin@quiz.com', password_hash, role_id[0]))
+        INSERT INTO user (nom, prenom, email, password_hash, id_role, email_verified) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', ('Admin', 'System', 'admin@quiz.com', password_hash, role_id[0], 1))
     
     db.commit()
     db.close()
