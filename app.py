@@ -44,6 +44,10 @@ def home():
     """Alias pour la page d'accueil"""
     return redirect(url_for('index'))
 
+@app.route('/demo')
+def demo():
+    return render_template('demo.html')
+
 @app.route('/dashboard')
 def dashboard():
     from flask import session
