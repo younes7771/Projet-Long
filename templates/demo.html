@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Démonstration - EvalyQuiz{% endblock %}
+
+{% block content %}
+<div class="demo-container">
+    <h1>Démonstration de l'application</h1>
+    <p>Découvrez comment fonctionne EvalyQuiz en vidéo</p>
+    
+    <div class="video-wrapper" id="videoWrapper">
+        <!-- Remplacez XXX par votre code d'intégration -->
+        <iframe id="demoIframe"
+                src="https://drive.google.com/file/d/1owO3B_zA6HtRRXkVh2HIGqbTkiYN6iig/preview" 
+                width="100%" 
+                height="450" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media" 
+                allowfullscreen>
+        </iframe>
+    </div>
+
+    <div id="errorMessage" class="error-message" style="display: none;">
+        <p>⚠️ La vidéo n'a pas pu se charger.</p>
+        <p>Veuillez accéder directement à la vidéo sur Google Drive :</p>
+        <a href="https://drive.google.com/file/d/1owO3B_zA6HtRRXkVh2HIGqbTkiYN6iig/view" 
+           target="_blank" 
+           class="btn-drive">
+            Ouvrir la vidéo sur Google Drive
+        </a>
+    </div>
+    
+    <div class="demo-info">
+        <p>Cette vidéo présente les fonctionnalités principales : création de quiz, passage des tests, et consultation des résultats.</p>
+        <a href="{{ url_for('auth.register') }}" class="btn-primary">Créer un compte</a>
+    </div>
+</div>
+
+<style>
+.demo-container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 40px;
+  background-color: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: var(--border);
+}
+
+.demo-container h1 {
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 32px;
+}
+
+.demo-container > p {
+  color: var(--text);
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.video-wrapper {
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.video-wrapper iframe {
+  width: 100%;
+  height: 450px;
+  border: none;
+}
+
+.error-message {
+  background-color: #fee;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.error-message p {
+  color: var(--primary);
+  font-size: 16px;
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.btn-drive {
+  display: inline-block;
+  padding: 12px 40px;
+  background-color: #4285F4;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-drive:hover {
+  background-color: #2f5ad1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+}
+
+.demo-info {
+  background-color: var(--surface-2);
+  padding: 25px;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+  text-align: center;
+}
+
+.demo-info p {
+  color: var(--text);
+  font-size: 16px;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.btn-primary {
+  display: inline-block;
+  padding: 12px 40px;
+  background-color: var(--highlight);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary);
+  color: var(--surface);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .demo-container {
+    margin: 20px auto;
+    padding: 20px;
+  }
+
+  .demo-container h1 {
+    font-size: 24px;
+  }
+
+  .video-wrapper iframe {
+    height: 300px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const iframe = document.getElementById('demoIframe');
+  const videoWrapper = document.getElementById('videoWrapper');
+  const errorMessage = document.getElementById('errorMessage');
+  
+  // Vérifier après 5 secondes si l'iframe a chargé
+  setTimeout(function() {
+    try {
+      // Si l'iframe n'a pas de contenu, afficher l'erreur
+      if (!iframe.offsetHeight || iframe.style.display === 'none') {
+        videoWrapper.style.display = 'none';
+        errorMessage.style.display = 'block';
+      }
+    } catch (e) {
+      // En cas d'erreur, afficher le message de secours
+      videoWrapper.style.display = 'none';
+      errorMessage.style.display = 'block';
+    }
+  }, 5000);
+  
+  // Alternative: détecter les erreurs de chargement
+  iframe.addEventListener('error', function() {
+    videoWrapper.style.display = 'none';
+    errorMessage.style.display = 'block';
+  });
+});
+</script>
+
+{% endblock %}

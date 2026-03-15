@@ -65,6 +65,7 @@ def dashboard():
     db.close()
     return render_template('etudiant/dashboard.html', quiz=quiz_disponibles, resultats=resultats)
 
+
 @etudiant_bp.route('/quiz/<int:quiz_id>/take')
 @login_required
 @etudiant_required
@@ -89,14 +90,24 @@ def take_quiz(quiz_id):
         return redirect(url_for('etudiant.dashboard'))
     
     # Récupérer les questions
-    c.execute("SELECT * FROM question WHERE id_quiz = ?", (quiz_id,))
+    c.execute("SELECT * FROM question WHERE id_quiz = ? ORDER BY id", (quiz_id,))
     questions = [row_to_dict(row) for row in c.fetchall()]
 
-    # Randomiser l'ordre des questions
-    random.shuffle(questions)
+    # Générer un nouvel ordre aléatoire si pas encore en session
+    session_key = f'quiz_{quiz_id}_order'
+    if session_key not in session:
+        question_ids = [q['id'] for q in questions]
+        random.shuffle(question_ids)
+        session[session_key] = question_ids
+    
+    # Récupérer l'ordre sauvegardé en session
+    ordered_ids = session[session_key]
+    
+    # Trier les questions selon l'ordre aléatoire
+    questions_ordered = sorted(questions, key=lambda q: ordered_ids.index(q['id']))
     
     questions_with_choix = []
-    for q in questions:
+    for q in questions_ordered:
         c.execute("SELECT * FROM choix_reponse WHERE id_question = ?", (q['id'],))
         choix = [row_to_dict(row) for row in c.fetchall()]
         questions_with_choix.append({
@@ -388,86 +399,47 @@ def export_correction(quiz_id):
     
     questions = [row_to_dict(row) for row in c.fetchall()]
     
-    # Préparer le contenu HTML pour l'export
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Correction - {resultat['titre']}</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 40px; }}
-            h1 {{ color: #2c3e50; }}
-            .header {{ margin-bottom: 30px; }}
-            .student-info {{ background: #f8f9fa; padding: 15px; border-radius: 5px; }}
-            .question {{ margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }}
-            .correct {{ color: green; font-weight: bold; }}
-            .incorrect {{ color: red; }}
-            .reponse {{ margin: 10px 0; padding: 10px; background: #f8f9fa; }}
-        </style>
-    </head>
-    <body>
-        <h1>Correction détaillée - {resultat['titre']}</h1>
-        <div class="header">
-            <p><strong>Étudiant:</strong> {resultat['prenom']} {resultat['nom']}</p>
-            <p><strong>Date:</strong> {resultat['date_soumission']}</p>
-            <p><strong>Score final:</strong> {resultat['score']} points</p>
-        </div>
-    """
-    
-    for i, q in enumerate(questions, 1):
+    questions_with_details = []
+    for question in questions:
         # Récupérer les réponses de l'étudiant pour cette question
         c.execute('''
             SELECT re.*, cr.texte as choix_texte
             FROM reponse_etudiant re
             LEFT JOIN choix_reponse cr ON re.id_choix = cr.id
             WHERE re.id_resultat = ? AND re.id_question = ?
-        ''', (resultat['id'], q['id']))
+        ''', (resultat['id'], question['id']))
         
-        reponses = c.fetchall()
-        
-        html_content += f"""
-        <div class="question">
-            <h3>Question {i}</h3>
-            <p><strong>Énoncé:</strong> {q['enonce']}</p>
-            <p><strong>Type:</strong> {q['type']}</p>
-            <p><strong>Barème:</strong> {q['bareme']} points</p>
-            <div class="reponse">
-                <strong>Votre réponse:</strong><br>
-        """
-        
-        if q['type'] == 'numerique':
-            reponse_text = reponses[0]['texte_reponse'] if reponses else "Non répondue"
-            html_content += f"<p>{reponse_text}</p>"
-        else:
-            if reponses:
-                for r in reponses:
-                    status = "correct" if r['est_correct'] else "incorrect"
-                    html_content += f"<p class='{status}'>- {r['choix_texte']}</p>"
-            else:
-                html_content += "<p>Aucune réponse</p>"
-        
-        # Indiquer si la réponse est correcte
-        points = reponses[0]['points_obtenus'] if reponses else 0
-        html_content += f"<p><strong>Points obtenus:</strong> {points}/{q['bareme']}</p>"
-        html_content += "</div></div>"
-    
-    html_content += """
-    </body>
-    </html>
-    """
+        reponses = [row_to_dict(row) for row in c.fetchall()]
+        questions_with_details.append({
+            'question': question,
+            'reponses': reponses
+        })
     
     db.close()
     
-    # Créer un fichier HTML à télécharger
-    from flask import send_file
-    import io
+    # Générer le HTML depuis un template
+    html_content = render_template(
+        'etudiant/correction_pdf_template.html',
+        resultat=resultat,
+        questions=questions_with_details
+    )
     
-    # Pour PDF, nous pouvons utiliser weasyprint ou pdfkit
-    # Version simple : export HTML
+    # Créer le PDF
+    pdf_output = io.BytesIO()
+    pisa_status = pisa.CreatePDF(
+        src=html_content,
+        dest=pdf_output
+    )
+    
+    if pisa_status.err:
+        flash('Une erreur est survenue lors de la création du PDF')
+        return redirect(url_for('etudiant.view_correction', quiz_id=quiz_id))
+    
+    pdf_output.seek(0)
+    
     return send_file(
-        io.BytesIO(html_content.encode('utf-8')),
-        mimetype='text/html',
+        pdf_output,
+        mimetype='application/pdf',
         as_attachment=True,
-        download_name=f'correction_{resultat["titre"]}_{session["nom"]}.html'
+        download_name=f'Correction_{resultat["titre"]}_{resultat["nom"]}.pdf'
     )

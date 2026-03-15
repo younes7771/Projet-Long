@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Correction - {{ resultat.titre }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            padding: 30px;
+        }
+        
+        .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #222;
+        }
+        
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            font-size: 13px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .score-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .score-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .questions-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 20px;
+            border-left: 3px solid #333;
+            padding-left: 10px;
+        }
+        
+        .question-block {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .question-text {
+            background: #f9f9f9;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ddd;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .question-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .answer-section {
+            background: #fafafa;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+        
+        .answer-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .answer-content {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .answer-item {
+            margin-bottom: 6px;
+        }
+        
+        .correct-answer {
+            color: #27ae60;
+        }
+        
+        .incorrect-answer {
+            color: #e74c3c;
+        }
+        
+        .points-display {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .points-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .unanswered {
+            color: #999;
+            font-style: italic;
+        }
+        
+        @media print {
+            body {
+                padding: 20px;
+            }
+            
+            .question-block {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête -->
+    <div class="header">
+        <h1>Correction - {{ resultat.titre }}</h1>
+        
+        <div class="header-info">
+            <div class="info-item">
+                <span class="info-label">Étudiant</span>
+                <span class="info-value">{{ resultat.prenom }} {{ resultat.nom }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Date</span>
+                <span class="info-value">{{ resultat.date_soumission }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Quiz</span>
+                <span class="info-value">{{ resultat.titre }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Score global -->
+    <div class="score-section">
+        <div class="score-label">SCORE FINAL</div>
+        <div class="score-value">{{ resultat.score }} / {{ questions|sum(attribute='question.bareme')|int }}</div>
+    </div>
+    
+    <!-- Questions et réponses -->
+    <div class="questions-title">Détail des réponses</div>
+    
+    {% for item in questions %}
+    <div class="question-block">
+        <div class="question-number">Question {{ loop.index }}</div>
+        
+        <div class="question-text">{{ item.question.enonce }}</div>
+        
+        <div class="question-meta">
+            <span>Type: {{ item.question.type }}</span>
+            <span>Barème: {{ item.question.bareme }} points</span>
+        </div>
+        
+        <!-- Réponse de l'étudiant -->
+        {% if item.reponses %}
+            <div class="answer-section">
+                <div class="answer-label">Votre réponse</div>
+                
+                <div class="answer-content">
+                    {% if item.question.type == 'numerique' %}
+                        {% if item.reponses %}
+                            <span>{{ item.reponses[0].texte_reponse }}</span>
+                        {% else %}
+                            <span class="unanswered">Aucune réponse</span>
+                        {% endif %}
+                    {% else %}
+                        {% if item.reponses %}
+                            {% for reponse in item.reponses %}
+                            <div class="answer-item {% if reponse.choix_texte %}{% if reponse.est_correct %}correct-answer{% else %}incorrect-answer{% endif %}{% endif %}">
+                                • {{ reponse.choix_texte if reponse.choix_texte else 'Réponse non trouvée' }}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <span class="unanswered">Aucune réponse</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="points-display">
+                    Points obtenus: <span class="points-value">{{ item.reponses[0].points_obtenus if item.reponses else 0 }} / {{ item.question.bareme }}</span>
+                </div>
+            </div>
+        {% else %}
+            <div class="answer-section">
+                <div class="answer-label">Votre réponse</div>
+                <div class="answer-content">
+                    <span class="unanswered">Non répondue</span>
+                </div>
+                <div class="points-display">
+                    Points obtenus: <span class="points-value">0 / {{ item.question.bareme }}</span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+</body>
+</html>
