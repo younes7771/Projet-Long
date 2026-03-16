@@ -33,11 +33,6 @@
                         <td>{{ resultat.date_soumission }}</td>
                         <td>{{ resultat.score }}/{{ resultat.points_max }}</td>
                         <td>{{ "%.1f"|format((resultat.score / resultat.points_max * 100) if resultat.points_max > 0 else 0) }}%</td>
-                        <td>
-                            <a href="{{ url_for('admin.view_resultat', resultat_id=resultat.id) }}">
-                                <button>Détails</button>
-                            </a>
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
