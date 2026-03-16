@@ -4,7 +4,9 @@ from utils.decorators import login_required, etudiant_required
 from datetime import datetime
 import sqlite3
 import random
-
+import io
+from xhtml2pdf import pisa
+from flask import send_file
 
 etudiant_bp = Blueprint('etudiant', __name__)
 
