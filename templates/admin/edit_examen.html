@@ -1,17 +1,14 @@
 {% extends "admin/base_admin.html" %}
-{% block title %}Éditer quiz : {{ exam.titre }}{% endblock %}
+{% block title %}Éditer examen : {{ exam.titre }}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleEditQuiz.css') }}">
-
-<h1 class="page-title">Éditer le quiz</h1>
 
 <div class="quiz-edit-container">
 
     <!-- Formulaire de modification de l'examen -->
     <section class="edit-exam">
-        <h3 class="section-title">Informations du quiz</h3>
-
+        <h2>Modifier l'examen</h2>
         <form method="post">
             <input type="hidden" name="action" value="edit_exam">
 
@@ -20,6 +17,17 @@
 
             <!-- Description -->
             <textarea name="description" placeholder="Description de l'examen" rows="4">{{ exam.description }}</textarea>
+
+            <!-- Durée -->
+            <input type="number" name="duree" placeholder="Durée totale (minutes)" value="{{ exam.duree }}" min="1" >
+
+            <!-- Date de début -->
+            <label>Date de début :</label>
+            <input type="datetime-local" name="date_debut" value="{{ exam.date_debut }}" >
+
+            <!-- Date de fin -->
+            <label>Date de fin :</label>
+            <input type="datetime-local" name="date_fin" value="{{ exam.date_fin }}">
 
             <!-- Status -->
             <label>Status :</label>
@@ -55,7 +63,7 @@
 
     <!-- Questions existantes -->
     <section class="existing-questions">
-        <h3 class="section-title">Questions existantes</h3>
+        <h3>Questions existantes</h3>
 
         {% for item in questions %}
         <div class="question">
@@ -82,7 +90,7 @@
 
     <!-- Ajouter une question -->
     <section class="add-question">
-        <h3 class="section-title">Ajouter une question</h3>
+        <h3>Ajouter une question</h3>
 
         <form method="post">
             <input type="hidden" name="action" value="add_question">
@@ -127,11 +135,11 @@
     <section class="quiz-actions">
         <form method="post" style="display:inline;">
             <input type="hidden" name="action" value="publish">
-            <button type="submit" class="btn-publish">Publier le quiz</button>
+            <button type="submit" class="btn-publish">Publier l'examen</button>
         </form>
 
         <a href="{{ url_for('admin.gestion_examens') }}">
-            <button type="button" class="btn-back">Retour à la gestion des quiz</button>
+            <button type="button" class="btn-back">Retour à la gestion des examens</button>
         </a>
     </section>
 

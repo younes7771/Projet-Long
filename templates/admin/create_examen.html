@@ -1,6 +1,6 @@
 {% extends "admin/base_admin.html" %}
 
-{% block title %}Créer un quiz{% endblock %}
+{% block title %}Créer un examen{% endblock %}
 
 {% block content %}
 
@@ -8,15 +8,26 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/styleCreateQuiz.css') }}">
 
 <div class="form-container">
-    <h2 class="form-title">Créer un quiz</h2>
+    <h2 class="form-title">Créer un examen</h2>
         
     <form method="post" action="{{ url_for('admin.create_exam') }}">
         
         <!-- Titre -->
-        <input type="text" name="titre" placeholder="Titre du quiz" required>
+        <input type="text" name="titre" placeholder="Titre de l'examen" required>
 
         <!-- Description -->
-        <textarea name="description" placeholder="Description du quiz" rows="4"></textarea>
+        <textarea name="description" placeholder="Description de l'examen" rows="4"></textarea>
+
+        <!-- Durée totale -->
+        <input type="number" name="duree" placeholder="Durée totale (minutes)" required min="1">
+
+        <!-- Date de début -->
+        <label>Date de début :</label>
+        <input type="datetime-local" name="date_debut" required>
+
+        <!-- Date de fin -->
+        <label>Date de fin :</label>
+        <input type="datetime-local" name="date_fin" required>
 
         <!-- Matière -->
         <label>Matière :</label>
@@ -41,21 +52,22 @@
         </select>
 
         <!-- Groupes cibles -->
-        <label>Groupes cibles (optionnel) :</label>
-        <div class="groupes-box">
+        <fieldset>
+            <legend>Groupes cibles (optionnel)</legend>
+
             {% for groupe in groupes %}
                 <label class="checkbox-label">
-                    <input type="checkbox" name="groupes" value="{{ groupe.id }}">
-                    {{ groupe.nom }}
+                    <input type="checkbox" name="groupes" value="{{ groupe['id'] }}">
+                    {{ groupe['nom'] }}
                 </label>
             {% endfor %}
-        </div>
+        </fieldset>
 
-        <button type="submit">Créer le quiz</button>
+        <button type="submit">Créer l'examen</button>
     </form>
 
     <p style="margin-top: 20px;">
-        <a href="{{ url_for('admin.gestion_examens') }}">← Retour à la gestion des quiz</a>
+        <a href="{{ url_for('admin.gestion_examens') }}">← Retour à la gestion des examens</a>
     </p>
 </div>
 {% endblock %}

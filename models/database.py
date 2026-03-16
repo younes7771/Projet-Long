@@ -127,6 +127,7 @@ def init_db():
                 FOREIGN KEY (id_etudiant) REFERENCES user (id),
                 UNIQUE(id_quiz, id_etudiant)
             );
+                        
             CREATE TABLE IF NOT EXISTS reponse_etudiant (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_resultat INTEGER NOT NULL,
