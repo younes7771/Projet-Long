@@ -11,8 +11,13 @@ from routes.contact import contact_bp  # NOUVEAU
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Initialisation de la base de données uniquement hors tests
+# Cela évite les erreurs "UNIQUE constraint failed" lors du setup de pytest
+with app.app_context():
+    if not app.config.get('TESTING'):
+        init_db()
 # Initialisation de la base de données
-init_db()
+
 
 # Créer des données initiales (à supprimer en production)
 # try:

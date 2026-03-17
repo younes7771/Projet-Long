@@ -41,9 +41,9 @@ def edit_question(question_id):
             reponse_correcte = request.form['reponse_correcte']
             c.execute("""
                 UPDATE question
-                SET enonce = ?, bareme = ?, duree = ?, reponse_correcte = ?
+                SET enonce = ?, bareme = ?, duree = ?
                 WHERE id = ?
-            """, (enonce, bareme, duree, reponse_correcte, question_id))
+            """, (enonce, bareme, duree, question_id))
 
         else:
             c.execute("""
@@ -78,7 +78,9 @@ def delete_question(question_id):
     db = get_db()
     c = db.cursor()
 
-    c.execute("SELECT id_quiz FROM question WHERE id = ?", (question_id,))
+    c.execute("SELECT id_quiz FROM question WHERE id = ? AND id_enseignant = ?", 
+              (question_id, session['user_id']))
+    
     row = c.fetchone()
 
     if not row:
@@ -406,7 +408,7 @@ def export_quiz_content_pdf(quiz_id):
         flash('Quiz introuvable')
         return redirect(url_for('enseignant.dashboard'))
     
-    c.execute("SELECT * FROM question WHERE id_quiz=?",(quiz_id,))
+    c.execute("SELECT * FROM question WHERE id_quiz=? ORDER BY RANDOM()",(quiz_id,))
     questions=[row_to_dict(row) for row in c.fetchall()]
 
     total_duree_secondes=sum(q['duree'] for q in questions if q['duree'])
@@ -415,7 +417,7 @@ def export_quiz_content_pdf(quiz_id):
 
     questions_avec_choix=[]
     for q in questions:
-        c.execute("SELECT * FROM choix_reponse WHERE id_question=?",(q['id'],))
+        c.execute("SELECT * FROM choix_reponse WHERE id_question=? ORDER BY RANDOM()",(q['id'],))
         choix=[row_to_dict(row) for row in c.fetchall()]
         questions_avec_choix.append({'question':q,'choix':choix})
 
