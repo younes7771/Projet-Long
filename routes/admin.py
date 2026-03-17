@@ -614,9 +614,6 @@ def reports():
             resultats=resultats_examen,
             moyenne=moyenne_examen
         )
-
-
-
 @admin_bp.route('/exam/results')
 @login_required
 @admin_required
